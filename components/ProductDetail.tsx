@@ -188,6 +188,41 @@ export function ProductDetail({ product }: { product: Product }) {
           <Accordion title="Description" defaultOpen>
             <p className="whitespace-pre-line">{product.description || "Details coming soon."}</p>
           </Accordion>
+          {sizes.length > 0 && (
+            <Accordion title="Size Guide">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[360px] border-collapse text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-neutral-200">
+                      <th className="py-2 pr-3 font-heading uppercase tracking-wide">Size</th>
+                      <th className="py-2 pr-3 font-heading uppercase tracking-wide">Bust (in)</th>
+                      <th className="py-2 pr-3 font-heading uppercase tracking-wide">Waist (in)</th>
+                      <th className="py-2 font-heading uppercase tracking-wide">Hips (in)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { s: "S", bust: "32-34", waist: "25-27", hips: "35-37" },
+                      { s: "M", bust: "35-37", waist: "28-30", hips: "38-40" },
+                      { s: "L", bust: "38-40", waist: "31-33", hips: "41-43" },
+                      { s: "XL", bust: "41-43", waist: "34-36", hips: "44-46" },
+                      { s: "2XL", bust: "44-46", waist: "37-39", hips: "47-49" },
+                    ].map((row) => (
+                      <tr key={row.s} className="border-b border-neutral-100">
+                        <td className="py-2 pr-3 font-medium">{row.s}</td>
+                        <td className="py-2 pr-3">{row.bust}</td>
+                        <td className="py-2 pr-3">{row.waist}</td>
+                        <td className="py-2">{row.hips}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="mt-3 text-xs text-neutral-400">
+                General reference chart — message us on WhatsApp if you&apos;re between sizes.
+              </p>
+            </Accordion>
+          )}
           <Accordion title="Shipping & Delivery">
             <p>Beirut: $4</p>
             <p>Outside Beirut: $6</p>

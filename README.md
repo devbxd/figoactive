@@ -20,6 +20,26 @@ Open `lib/products.ts` and edit the `PRODUCTS` array directly — add, remove,
 or change any product's name/price/images/variants/description there, then
 redeploy. Product images live in `public/products/<slug>/`.
 
+A Supabase-backed admin dashboard (Categories + Products CRUD at `/admin`)
+was built and then put on hold — the client may or may not want it. That
+work is still in git history (commit `dbd79e2`, reverted in `0400fb9`) and
+can be restored later without starting over.
+
+## "Special" touches (after the client sent oneractive.com as a reference)
+
+- Countdown-timer promo banner on the homepage (`lib/site.ts` →
+  `SALE_LABEL` / `SALE_ENDS_AT` — update the date manually, it just
+  disappears once it passes).
+- Quick-add-to-cart on hover, for products with no color/size options.
+- "-X%" badge computed from the compare-at price.
+- "Shop by category" image tiles on the homepage.
+- Newsletter signup (homepage + footer) — front-end only for now, doesn't
+  store the email anywhere yet (no backend without Supabase); wire it to
+  Resend or Supabase once one is set up.
+- Size guide chart on product pages that have sizes (generic reference
+  measurements — swap in Figo Active's real chart when they provide one).
+- Scroll-reveal animations on homepage sections.
+
 ## Confirmed with the client
 
 - WhatsApp number (`96176963942` in `lib/site.ts`) — correct.

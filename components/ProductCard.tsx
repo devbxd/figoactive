@@ -1,9 +1,27 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { useState } from "react";
 import type { Product } from "@/lib/products";
+import { useCart } from "./CartProvider";
 
 export function ProductCard({ product }: { product: Product }) {
+  const { addItem } = useCart();
+  const [added, setAdded] = useState(false);
   const hasDiscount = product.compareAtPrice != null && product.compareAtPrice > product.price;
+  const percentOff = hasDiscount ? Math.round((1 - product.price / product.compareAtPrice!) * 100) : 0;
+  // Quick-add only makes sense when there's nothing to choose — a product
+  // with color/size options needs its own page so the shopper can pick one.
+  const canQuickAdd = product.variants.length === 0;
+
+  function quickAdd(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    addItem({ slug: product.slug, variant: null, name: product.name, price: product.price, image: product.images[0] ?? null });
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1200);
+  }
 
   return (
     <Link href={`/shop/${product.slug}`} className="group block">
@@ -17,8 +35,17 @@ export function ProductCard({ product }: { product: Product }) {
         />
         {hasDiscount && (
           <span className="absolute left-2 top-2 rounded-full bg-brand-mint px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-brand-navy">
-            Sale
+            -{percentOff}%
           </span>
+        )}
+        {canQuickAdd && (
+          <button
+            type="button"
+            onClick={quickAdd}
+            className="absolute inset-x-2 bottom-2 hidden translate-y-10 bg-brand-navy py-2 font-heading text-[11px] font-semibold uppercase tracking-widest text-white opacity-0 transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100 md:block"
+          >
+            {added ? "Added ✓" : "Quick add"}
+          </button>
         )}
       </div>
       <p className="mt-3 font-heading text-sm uppercase tracking-wide text-brand-navy">{product.name}</p>

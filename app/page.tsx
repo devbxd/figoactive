@@ -1,14 +1,20 @@
 import Link from "next/link";
 import Image from "next/image";
-import { PRODUCTS } from "@/lib/products";
+import { PRODUCTS, CATEGORIES } from "@/lib/products";
 import { ProductGrid } from "@/components/ProductGrid";
-import { INSTAGRAM_HANDLE } from "@/lib/site";
+import { CategoryTiles } from "@/components/CategoryTiles";
+import { NewsletterForm } from "@/components/NewsletterForm";
+import { CountdownBanner } from "@/components/CountdownBanner";
+import { ScrollReveal } from "@/components/ScrollReveal";
+import { INSTAGRAM_HANDLE, SALE_LABEL, SALE_ENDS_AT } from "@/lib/site";
 
 export default function HomePage() {
   const featured = PRODUCTS.slice(0, 8);
 
   return (
     <main>
+      <CountdownBanner label={SALE_LABEL} endsAt={SALE_ENDS_AT} />
+
       <section className="relative flex min-h-[80vh] items-center overflow-hidden bg-brand-navy text-white">
         <div className="absolute inset-0">
           <Image
@@ -39,7 +45,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-16 md:px-6">
+      <ScrollReveal className="mx-auto max-w-6xl px-4 py-16 md:px-6">
+        <h2 className="mb-6 text-center font-heading text-xl font-bold uppercase tracking-wide text-brand-navy">
+          Shop by category
+        </h2>
+        <CategoryTiles categories={CATEGORIES} products={PRODUCTS} />
+      </ScrollReveal>
+
+      <ScrollReveal className="mx-auto max-w-6xl px-4 py-16 md:px-6">
         <div className="mb-8 flex items-end justify-between">
           <h2 className="font-heading text-2xl font-bold uppercase tracking-wide text-brand-navy">Bestsellers</h2>
           <Link href="/shop" className="font-heading text-xs uppercase tracking-wide text-brand-navy underline underline-offset-4 hover:text-brand-mint">
@@ -47,7 +60,7 @@ export default function HomePage() {
           </Link>
         </div>
         <ProductGrid products={featured} />
-      </section>
+      </ScrollReveal>
 
       <section className="bg-brand-cream px-4 py-16 text-center md:px-6">
         <p className="mx-auto max-w-2xl font-heading text-xl font-medium uppercase leading-relaxed tracking-wide text-brand-navy md:text-2xl">
@@ -55,6 +68,16 @@ export default function HomePage() {
         </p>
         <p className="mt-4 text-sm text-neutral-600">Performance activewear built to move with you, everywhere.</p>
       </section>
+
+      <ScrollReveal className="bg-brand-navy px-4 py-16 text-center text-white md:px-6">
+        <p className="font-heading text-xs uppercase tracking-[0.2em] text-brand-mint">Stay in the loop</p>
+        <h2 className="mx-auto mt-2 max-w-md font-heading text-xl font-bold uppercase tracking-wide">
+          New drops, restocks and exclusive discounts
+        </h2>
+        <div className="mx-auto mt-6 flex justify-center">
+          <NewsletterForm dark />
+        </div>
+      </ScrollReveal>
 
       <section className="mx-auto max-w-6xl px-4 py-16 text-center md:px-6">
         <p className="font-heading text-xs uppercase tracking-[0.2em] text-neutral-500">Follow along</p>
