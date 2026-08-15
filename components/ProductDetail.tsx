@@ -12,11 +12,11 @@ export function ProductDetail({ product }: { product: Product }) {
   const { has, toggle } = useWishlist();
 
   const colors = useMemo(
-    () => Array.from(new Set(product.variants.map((v) => v.color).filter(Boolean))) as string[],
+    () => Array.from(new Set(product.variants.map((v) => v.color_label).filter(Boolean))) as string[],
     [product]
   );
   const sizes = useMemo(
-    () => Array.from(new Set(product.variants.map((v) => v.size).filter(Boolean))) as string[],
+    () => Array.from(new Set(product.variants.map((v) => v.size_label).filter(Boolean))) as string[],
     [product]
   );
 
@@ -29,23 +29,23 @@ export function ProductDetail({ product }: { product: Product }) {
   const activeVariant =
     product.variants.length > 0
       ? product.variants.find(
-          (v) => (colors.length === 0 || v.color === selectedColor) && (sizes.length === 0 || v.size === selectedSize)
+          (v) =>
+            (colors.length === 0 || v.color_label === selectedColor) &&
+            (sizes.length === 0 || v.size_label === selectedSize)
         ) ?? null
       : null;
 
-  const price = activeVariant?.price ?? product.price;
-  const compareAtPrice = activeVariant?.compareAtPrice ?? product.compareAtPrice;
+  const price = activeVariant?.price ?? product.price ?? 0;
+  const compareAtPrice = activeVariant?.compare_at_price ?? product.compare_at_price;
   const hasDiscount = compareAtPrice != null && compareAtPrice > price;
   const outOfStock = activeVariant ? !activeVariant.available : false;
 
   const variantLabel = [selectedColor, selectedSize].filter(Boolean).join(" / ") || null;
-  const wishlistItem = { slug: product.slug, name: product.name, price: product.price, image: product.images[0] };
+  const firstImage = product.images[0]?.url ?? null;
+  const wishlistItem = { slug: product.slug, name: product.name, price: product.price, image: firstImage };
 
   function handleAdd() {
-    addItem(
-      { slug: product.slug, variant: variantLabel, name: product.name, price, image: product.images[0] },
-      quantity
-    );
+    addItem({ slug: product.slug, variant: variantLabel, name: product.name, price, image: firstImage }, quantity);
     setAdded(true);
     setTimeout(() => setAdded(false), 1500);
   }
@@ -54,20 +54,28 @@ export function ProductDetail({ product }: { product: Product }) {
     <div className="grid gap-8 md:grid-cols-2">
       <div>
         <div className="relative aspect-[4/5] overflow-hidden bg-brand-cream">
-          <Image src={product.images[activeImage]} alt={product.name} fill sizes="(min-width: 768px) 50vw, 100vw" className="object-cover" />
+          {product.images[activeImage] && (
+            <Image
+              src={product.images[activeImage].url}
+              alt={product.name}
+              fill
+              sizes="(min-width: 768px) 50vw, 100vw"
+              className="object-cover"
+            />
+          )}
         </div>
         {product.images.length > 1 && (
           <div className="mt-3 flex gap-2">
             {product.images.map((img, i) => (
               <button
-                key={img}
+                key={img.url}
                 type="button"
                 onClick={() => setActiveImage(i)}
                 className={`relative h-16 w-16 shrink-0 overflow-hidden border ${
                   activeImage === i ? "border-brand-navy" : "border-neutral-200"
                 }`}
               >
-                <Image src={img} alt="" fill sizes="64px" className="object-cover" />
+                <Image src={img.url} alt="" fill sizes="64px" className="object-cover" />
               </button>
             ))}
           </div>
@@ -75,7 +83,7 @@ export function ProductDetail({ product }: { product: Product }) {
       </div>
 
       <div>
-        <p className="font-heading text-xs uppercase tracking-[0.2em] text-neutral-400">{product.category}</p>
+        <p className="font-heading text-xs uppercase tracking-[0.2em] text-neutral-400">{product.category?.name}</p>
         <h1 className="mt-1 font-heading text-2xl font-bold uppercase tracking-wide text-brand-navy">{product.name}</h1>
 
         <p className="mt-3 text-lg">
@@ -188,6 +196,41 @@ export function ProductDetail({ product }: { product: Product }) {
           <Accordion title="Description" defaultOpen>
             <p className="whitespace-pre-line">{product.description || "Details coming soon."}</p>
           </Accordion>
+          {sizes.length > 0 && (
+            <Accordion title="Size Guide">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[360px] border-collapse text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-neutral-200">
+                      <th className="py-2 pr-3 font-heading uppercase tracking-wide">Size</th>
+                      <th className="py-2 pr-3 font-heading uppercase tracking-wide">Bust (in)</th>
+                      <th className="py-2 pr-3 font-heading uppercase tracking-wide">Waist (in)</th>
+                      <th className="py-2 font-heading uppercase tracking-wide">Hips (in)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { s: "S", bust: "32-34", waist: "25-27", hips: "35-37" },
+                      { s: "M", bust: "35-37", waist: "28-30", hips: "38-40" },
+                      { s: "L", bust: "38-40", waist: "31-33", hips: "41-43" },
+                      { s: "XL", bust: "41-43", waist: "34-36", hips: "44-46" },
+                      { s: "2XL", bust: "44-46", waist: "37-39", hips: "47-49" },
+                    ].map((row) => (
+                      <tr key={row.s} className="border-b border-neutral-100">
+                        <td className="py-2 pr-3 font-medium">{row.s}</td>
+                        <td className="py-2 pr-3">{row.bust}</td>
+                        <td className="py-2 pr-3">{row.waist}</td>
+                        <td className="py-2">{row.hips}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="mt-3 text-xs text-neutral-400">
+                General reference chart — message us on WhatsApp if you&apos;re between sizes.
+              </p>
+            </Accordion>
+          )}
           <Accordion title="Shipping & Delivery">
             <p>Beirut: $4</p>
             <p>Outside Beirut: $6</p>

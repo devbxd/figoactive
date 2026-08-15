@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { BRAND_NAME, INSTAGRAM_HANDLE, whatsappLink } from "@/lib/site";
-import { CATEGORIES } from "@/lib/products";
+import type { Category } from "@/lib/products";
+import { NewsletterForm } from "./NewsletterForm";
 
-export function Footer() {
+export function Footer({ categories }: { categories: Category[] }) {
   return (
     <footer className="bg-brand-black px-4 py-12 text-white/70">
       <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-4">
@@ -12,6 +13,10 @@ export function Footer() {
             Inspired by the fear of being average. Performance activewear for fearless athletes who own every
             stride and every street.
           </p>
+          <p className="mt-6 font-heading text-xs uppercase tracking-[0.15em] text-white">Get 10% off your first order</p>
+          <div className="mt-2">
+            <NewsletterForm dark />
+          </div>
         </div>
 
         <div>
@@ -22,10 +27,10 @@ export function Footer() {
                 All products
               </Link>
             </li>
-            {CATEGORIES.map((c) => (
-              <li key={c}>
-                <Link href={`/shop?category=${encodeURIComponent(c)}`} className="hover:text-brand-mint">
-                  {c}
+            {categories.map((c) => (
+              <li key={c.id}>
+                <Link href={`/shop?category=${encodeURIComponent(c.slug)}`} className="hover:text-brand-mint">
+                  {c.name}
                 </Link>
               </li>
             ))}

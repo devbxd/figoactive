@@ -3,10 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useCart } from "./CartProvider";
-import { CATEGORIES } from "@/lib/products";
+import type { Category } from "@/lib/products";
 import { BRAND_NAME } from "@/lib/site";
 
-export function Header() {
+export function Header({ categories }: { categories: Category[] }) {
   const { count } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -39,13 +39,13 @@ export function Header() {
           <Link href="/shop" className="transition-colors hover:text-brand-mint">
             Shop
           </Link>
-          {CATEGORIES.map((c) => (
+          {categories.map((c) => (
             <Link
-              key={c}
-              href={`/shop?category=${encodeURIComponent(c)}`}
+              key={c.id}
+              href={`/shop?category=${encodeURIComponent(c.slug)}`}
               className="transition-colors hover:text-brand-mint"
             >
-              {c}
+              {c.name}
             </Link>
           ))}
           <Link href="/contact" className="transition-colors hover:text-brand-mint">
@@ -90,9 +90,9 @@ export function Header() {
           <Link href="/shop" onClick={() => setMenuOpen(false)} className="py-2">
             Shop
           </Link>
-          {CATEGORIES.map((c) => (
-            <Link key={c} href={`/shop?category=${encodeURIComponent(c)}`} onClick={() => setMenuOpen(false)} className="py-2 pl-4 text-white/80">
-              {c}
+          {categories.map((c) => (
+            <Link key={c.id} href={`/shop?category=${encodeURIComponent(c.slug)}`} onClick={() => setMenuOpen(false)} className="py-2 pl-4 text-white/80">
+              {c.name}
             </Link>
           ))}
           <Link href="/wishlist" onClick={() => setMenuOpen(false)} className="py-2">
