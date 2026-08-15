@@ -4,10 +4,7 @@
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 export const BRAND_NAME = "Figo Active";
 
-// From the @figoactive Instagram bio (wa.me/76963942) — TODO confirm this
-// includes the right country code before going live; wa.me links normally
-// need the full number with country code (e.g. 96176963942 for Lebanon) or
-// WhatsApp will fail to open a chat.
+// Confirmed with the client.
 export const WHATSAPP_NUMBER = "96176963942";
 export const INSTAGRAM_HANDLE = "figoactive";
 

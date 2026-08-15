@@ -20,22 +20,20 @@ Open `lib/products.ts` and edit the `PRODUCTS` array directly — add, remove,
 or change any product's name/price/images/variants/description there, then
 redeploy. Product images live in `public/products/<slug>/`.
 
-## Things to confirm with the client before launch
+## Confirmed with the client
 
-- **WhatsApp number**: `lib/site.ts` uses `96176963942`, guessed by adding
-  Lebanon's country code to the `wa.me/76963942` link found in their
-  Instagram bio — confirm this is correct, a wrong number silently breaks
-  every WhatsApp button on the site.
+- WhatsApp number (`96176963942` in `lib/site.ts`) — correct.
+- Cash on delivery as the only payment method — fine, no card gateway needed.
+- Keep the "Send it via WhatsApp too" button on the order confirmation
+  screen — this is the main way an order reaches the owner.
+
+## Still open
+
 - **Contact email**: no public email was found anywhere for Figo Active —
   `lib/site.ts` currently has a placeholder (`hello@figoactive.com`).
-- **Card payments**: checkout only offers Cash on Delivery. Their current
-  Shopify store takes card payments (Shopify Payments) — this site has no
-  payment gateway wired up. Add one (Stripe or a local processor) before
-  launch if card payments matter, or confirm COD-only is fine.
 - **Order notifications**: without RESEND_API_KEY + OWNER_NOTIFICATION_EMAIL
-  set (see `.env.example`), the only way an order reaches the owner is the
-  customer tapping "Send it via WhatsApp too" after checkout. Configure
-  Resend (needs a verified sending domain) if email notifications matter.
+  set (see `.env.example`), the WhatsApp button above is the only way an
+  order reaches the owner — email notification is optional on top of that.
 - Several products (Dolmation Set, Pull-Puff Set, Airflow Bra, Aura Bra,
   Lili Biker Shorts, Athletica Bra, Bouba Flare Pants) have no description
   yet on the live Shopify store, so they show "Details coming soon." here
