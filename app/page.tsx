@@ -4,10 +4,9 @@ import { PRODUCTS, CATEGORIES } from "@/lib/products";
 import { ProductGrid } from "@/components/ProductGrid";
 import { CategoryTiles } from "@/components/CategoryTiles";
 import { NewsletterForm } from "@/components/NewsletterForm";
-import { CountdownBanner } from "@/components/CountdownBanner";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { Marquee } from "@/components/Marquee";
-import { INSTAGRAM_HANDLE, SALE_LABEL, SALE_ENDS_AT } from "@/lib/site";
+import { INSTAGRAM_HANDLE } from "@/lib/site";
 
 const MARQUEE_ITEMS = ["Elevate Every Rep", "Cash On Delivery", "Free Shipping In Beirut", "New Drops Weekly"];
 
@@ -17,15 +16,22 @@ export default function HomePage() {
 
   return (
     <main className="overflow-x-hidden">
-      <CountdownBanner label={SALE_LABEL} endsAt={SALE_ENDS_AT} />
-
       <section className="relative flex min-h-screen items-end overflow-hidden bg-brand-navy text-white">
         <div className="absolute inset-0">
-          <Image src={PRODUCTS[0].images[0]} alt="" fill priority sizes="100vw" className="object-cover" />
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            poster={PRODUCTS[0].images[0]}
+            className="h-full w-full object-cover"
+          >
+            <source src="/hero-video.mp4" type="video/mp4" />
+          </video>
           <div className="absolute inset-0 bg-gradient-to-t from-brand-navy via-brand-navy/60 to-brand-navy/10" />
           <div className="absolute inset-0 bg-gradient-to-r from-brand-navy/70 via-transparent to-transparent" />
         </div>
-        <div className="relative mx-auto w-full max-w-6xl px-4 pb-20 pt-40 md:px-6 md:pb-28">
+        <div className="relative mx-auto w-full max-w-6xl px-4 pb-20 pt-52 md:px-6 md:pb-28 md:pt-60">
           <p className="font-heading text-xs font-semibold uppercase tracking-[0.4em] text-brand-mint">
             New Season · Built To Move
           </p>

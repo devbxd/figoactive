@@ -39,6 +39,13 @@ can be restored later without starting over.
 - Size guide chart on product pages that have sizes (generic reference
   measurements — swap in Figo Active's real chart when they provide one).
 - Scroll-reveal animations on homepage sections.
+- Looping background video in the hero (`public/hero-video.mp4`) — a
+  royalty-free Pexels clip (pexels.com/video/8457013, free-to-use license,
+  no attribution required), not a YouTube download: YouTube videos stay
+  copyrighted to the uploader even when they look "free," and reusing
+  footage of an identifiable real person without a proper release is a
+  real risk for the client. Swap this file for real Figo Active footage
+  whenever they have some — same filename, same spot.
 
 ## Confirmed with the client
 

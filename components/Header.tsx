@@ -5,7 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCart } from "./CartProvider";
 import { CATEGORIES } from "@/lib/products";
-import { BRAND_NAME } from "@/lib/site";
+import { BRAND_NAME, SALE_LABEL, SALE_ENDS_AT } from "@/lib/site";
+import { CountdownBanner } from "./CountdownBanner";
 
 export function Header() {
   const { count } = useCart();
@@ -40,11 +41,7 @@ export function Header() {
         isHome ? "fixed" : "sticky"
       } ${transparent ? "bg-transparent" : "bg-brand-navy shadow-[0_1px_0_rgba(255,255,255,0.08)]"}`}
     >
-      {!transparent && (
-        <div className="bg-brand-mint py-1.5 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-navy">
-          Free shipping in Beirut on orders over $50
-        </div>
-      )}
+      <CountdownBanner label={SALE_LABEL} endsAt={SALE_ENDS_AT} />
 
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5 md:px-6">
         <button
