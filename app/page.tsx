@@ -6,93 +6,139 @@ import { CategoryTiles } from "@/components/CategoryTiles";
 import { NewsletterForm } from "@/components/NewsletterForm";
 import { CountdownBanner } from "@/components/CountdownBanner";
 import { ScrollReveal } from "@/components/ScrollReveal";
+import { Marquee } from "@/components/Marquee";
 import { INSTAGRAM_HANDLE, SALE_LABEL, SALE_ENDS_AT } from "@/lib/site";
+
+const MARQUEE_ITEMS = ["Elevate Every Rep", "Cash On Delivery", "Free Shipping In Beirut", "New Drops Weekly"];
 
 export default function HomePage() {
   const featured = PRODUCTS.slice(0, 8);
+  const editorial = PRODUCTS[Math.min(8, PRODUCTS.length - 1)];
 
   return (
-    <main>
+    <main className="overflow-x-hidden">
       <CountdownBanner label={SALE_LABEL} endsAt={SALE_ENDS_AT} />
 
-      <section className="relative flex min-h-[80vh] items-center overflow-hidden bg-brand-navy text-white">
+      <section className="relative flex min-h-screen items-end overflow-hidden bg-brand-navy text-white">
         <div className="absolute inset-0">
-          <Image
-            src={PRODUCTS[0].images[0]}
-            alt=""
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover opacity-40"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-brand-navy via-brand-navy/70 to-brand-navy/20" />
+          <Image src={PRODUCTS[0].images[0]} alt="" fill priority sizes="100vw" className="object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-brand-navy via-brand-navy/60 to-brand-navy/10" />
+          <div className="absolute inset-0 bg-gradient-to-r from-brand-navy/70 via-transparent to-transparent" />
         </div>
-        <div className="relative mx-auto max-w-6xl px-4 py-24 text-center md:px-6">
-          <p className="font-heading text-xs uppercase tracking-[0.3em] text-brand-mint">Unapologetically bold</p>
-          <h1 className="mx-auto mt-4 max-w-2xl font-heading text-4xl font-bold uppercase leading-tight tracking-tight md:text-6xl">
-            Elevate Your Urban Workout
-          </h1>
-          <p className="mx-auto mt-5 max-w-md text-sm text-white/80 md:text-base">
-            We believe sweat should never dull your shine. Gear for fearless athletes who own every stride and
-            every street.
+        <div className="relative mx-auto w-full max-w-6xl px-4 pb-20 pt-40 md:px-6 md:pb-28">
+          <p className="font-heading text-xs font-semibold uppercase tracking-[0.4em] text-brand-mint">
+            New Season · Built To Move
           </p>
-          <Link
-            href="/shop"
-            className="mt-8 inline-block bg-brand-mint px-8 py-3.5 font-heading text-sm font-semibold uppercase tracking-widest text-brand-navy transition-transform hover:scale-105"
-          >
-            Shop Now
-          </Link>
+          <h1 className="mt-5 max-w-3xl font-heading text-[15vw] font-bold uppercase leading-[0.9] tracking-tight sm:text-7xl md:text-8xl">
+            Own Every
+            <br />
+            Street
+          </h1>
+          <p className="mt-6 max-w-md text-sm leading-relaxed text-white/80 md:text-base">
+            We believe sweat should never dull your shine. Performance activewear for fearless athletes who own
+            every stride and every street.
+          </p>
+          <div className="mt-9 flex flex-wrap items-center gap-4">
+            <Link
+              href="/shop"
+              className="bg-brand-mint px-9 py-4 font-heading text-sm font-bold uppercase tracking-widest text-brand-navy transition-transform hover:scale-[1.03]"
+            >
+              Shop Now
+            </Link>
+            <a
+              href={`https://instagram.com/${INSTAGRAM_HANDLE}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="border border-white/40 px-9 py-4 font-heading text-sm font-bold uppercase tracking-widest text-white transition-colors hover:border-brand-mint hover:text-brand-mint"
+            >
+              @{INSTAGRAM_HANDLE}
+            </a>
+          </div>
         </div>
       </section>
 
-      <ScrollReveal className="mx-auto max-w-6xl px-4 py-16 md:px-6">
-        <h2 className="mb-6 text-center font-heading text-xl font-bold uppercase tracking-wide text-brand-navy">
+      <Marquee items={MARQUEE_ITEMS} />
+
+      <ScrollReveal className="mx-auto max-w-6xl px-4 py-20 md:px-6">
+        <h2 className="mb-8 text-center font-heading text-2xl font-bold uppercase tracking-wide text-brand-navy md:text-3xl">
           Shop by category
         </h2>
         <CategoryTiles categories={CATEGORIES} products={PRODUCTS} />
       </ScrollReveal>
 
-      <ScrollReveal className="mx-auto max-w-6xl px-4 py-16 md:px-6">
-        <div className="mb-8 flex items-end justify-between">
-          <h2 className="font-heading text-2xl font-bold uppercase tracking-wide text-brand-navy">Bestsellers</h2>
-          <Link href="/shop" className="font-heading text-xs uppercase tracking-wide text-brand-navy underline underline-offset-4 hover:text-brand-mint">
-            View all
-          </Link>
+      <ScrollReveal className="bg-brand-cream px-4 py-20 md:px-6">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-8 flex items-end justify-between">
+            <div>
+              <p className="font-heading text-xs font-semibold uppercase tracking-[0.3em] text-brand-navy/50">
+                Fan favorites
+              </p>
+              <h2 className="mt-1 font-heading text-2xl font-bold uppercase tracking-wide text-brand-navy md:text-3xl">
+                Bestsellers
+              </h2>
+            </div>
+            <Link
+              href="/shop"
+              className="font-heading text-xs font-semibold uppercase tracking-wide text-brand-navy underline underline-offset-4 hover:text-brand-mint"
+            >
+              View all
+            </Link>
+          </div>
+          <ProductGrid products={featured} />
         </div>
-        <ProductGrid products={featured} />
       </ScrollReveal>
 
-      <section className="bg-brand-cream px-4 py-16 text-center md:px-6">
-        <p className="mx-auto max-w-2xl font-heading text-xl font-medium uppercase leading-relaxed tracking-wide text-brand-navy md:text-2xl">
-          &ldquo;Inspired by the fear of being average.&rdquo;
-        </p>
-        <p className="mt-4 text-sm text-neutral-600">Performance activewear built to move with you, everywhere.</p>
-      </section>
+      {editorial && (
+        <section className="relative flex min-h-[70vh] items-center justify-center overflow-hidden bg-brand-navy text-center text-white">
+          <Image src={editorial.images[0]} alt="" fill sizes="100vw" className="object-cover opacity-50" />
+          <div className="absolute inset-0 bg-gradient-to-b from-brand-navy/20 via-transparent to-brand-navy/80" />
+          <div className="relative mx-auto max-w-2xl px-4 md:px-6">
+            <p className="font-heading text-xs font-semibold uppercase tracking-[0.4em] text-brand-mint">
+              The philosophy
+            </p>
+            <p className="mt-5 font-heading text-3xl font-bold uppercase leading-tight tracking-tight md:text-5xl">
+              Inspired by the fear of being average
+            </p>
+            <Link
+              href="/shop"
+              className="mt-8 inline-block bg-brand-mint px-9 py-4 font-heading text-sm font-bold uppercase tracking-widest text-brand-navy transition-transform hover:scale-[1.03]"
+            >
+              Shop The Collection
+            </Link>
+          </div>
+        </section>
+      )}
 
-      <ScrollReveal className="bg-brand-navy px-4 py-16 text-center text-white md:px-6">
-        <p className="font-heading text-xs uppercase tracking-[0.2em] text-brand-mint">Stay in the loop</p>
-        <h2 className="mx-auto mt-2 max-w-md font-heading text-xl font-bold uppercase tracking-wide">
+      <ScrollReveal className="bg-brand-black px-4 py-20 text-center text-white md:px-6">
+        <p className="font-heading text-xs font-semibold uppercase tracking-[0.3em] text-brand-mint">Stay in the loop</p>
+        <h2 className="mx-auto mt-3 max-w-lg font-heading text-2xl font-bold uppercase tracking-wide md:text-3xl">
           New drops, restocks and exclusive discounts
         </h2>
-        <div className="mx-auto mt-6 flex justify-center">
+        <div className="mx-auto mt-8 flex justify-center">
           <NewsletterForm dark />
         </div>
       </ScrollReveal>
 
-      <section className="mx-auto max-w-6xl px-4 py-16 text-center md:px-6">
-        <p className="font-heading text-xs uppercase tracking-[0.2em] text-neutral-500">Follow along</p>
+      <section className="mx-auto max-w-6xl px-4 py-20 text-center md:px-6">
+        <p className="font-heading text-xs font-semibold uppercase tracking-[0.3em] text-neutral-400">Follow along</p>
         <a
           href={`https://instagram.com/${INSTAGRAM_HANDLE}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-2 inline-block font-heading text-xl font-bold uppercase tracking-wide text-brand-navy hover:text-brand-mint"
+          className="mt-2 inline-block font-heading text-2xl font-bold uppercase tracking-wide text-brand-navy hover:text-brand-mint"
         >
           @{INSTAGRAM_HANDLE}
         </a>
-        <div className="mt-8 grid grid-cols-3 gap-2 md:grid-cols-6">
+        <div className="mt-10 grid grid-cols-3 gap-2 md:grid-cols-6">
           {PRODUCTS.slice(0, 6).map((p) => (
-            <div key={p.slug} className="relative aspect-square overflow-hidden bg-brand-cream">
-              <Image src={p.images[0]} alt={p.name} fill sizes="200px" className="object-cover" />
+            <div key={p.slug} className="group relative aspect-square overflow-hidden bg-brand-cream">
+              <Image
+                src={p.images[0]}
+                alt={p.name}
+                fill
+                sizes="200px"
+                className="object-cover transition-transform duration-300 group-hover:scale-110"
+              />
             </div>
           ))}
         </div>

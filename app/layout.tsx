@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Oswald, Quicksand } from "next/font/google";
+import { Oswald, Inter } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/components/CartProvider";
 import { WishlistProvider } from "@/components/WishlistProvider";
@@ -8,8 +8,12 @@ import { Footer } from "@/components/Footer";
 import { BottomNav } from "@/components/BottomNav";
 import { BRAND_NAME, SITE_URL } from "@/lib/site";
 
+// Oswald (condensed, bold, athletic) for headings/accents; Inter (clean,
+// neutral grotesque) for body text — swapped from the rounder Quicksand
+// found on the client's old Shopify theme for a more premium, editorial
+// feel closer to the oneractive.com reference they sent.
 const heading = Oswald({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-heading" });
-const body = Quicksand({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-body" });
+const body = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-body" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

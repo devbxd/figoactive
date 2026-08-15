@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useCart } from "./CartProvider";
 import { CATEGORIES } from "@/lib/products";
 import { BRAND_NAME } from "@/lib/site";
@@ -9,14 +10,37 @@ import { BRAND_NAME } from "@/lib/site";
 export function Header() {
   const { count } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const pathname = usePathname();
+  const isHome = pathname === "/";
+
+  useEffect(() => {
+    function onScroll() {
+      setScrolled(window.scrollY > 40);
+    }
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // On the homepage the header floats transparent over the hero image until
+  // the visitor scrolls, then solidifies — everywhere else it's always solid
+  // since there's no dark hero behind it to float over.
+  const transparent = isHome && !scrolled && !menuOpen;
 
   return (
-    <header className="sticky top-0 z-40 bg-brand-navy text-white">
-      <div className="bg-brand-mint py-1.5 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-navy">
-        Free shipping in Beirut on orders over $50
-      </div>
+    <header
+      className={`sticky top-0 z-40 text-white transition-colors duration-300 ${
+        transparent ? "bg-transparent" : "bg-brand-navy shadow-[0_1px_0_rgba(255,255,255,0.08)]"
+      }`}
+    >
+      {!transparent && (
+        <div className="bg-brand-mint py-1.5 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-navy">
+          Free shipping in Beirut on orders over $50
+        </div>
+      )}
 
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 md:px-6">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5 md:px-6">
         <button
           type="button"
           onClick={() => setMenuOpen((o) => !o)}
@@ -28,11 +52,11 @@ export function Header() {
           <span className="h-[1.5px] w-5 bg-white" />
         </button>
 
-        <Link href="/" className="font-heading text-xl font-bold uppercase tracking-[0.15em]">
+        <Link href="/" className="font-heading text-xl font-bold uppercase tracking-[0.2em]">
           {BRAND_NAME}
         </Link>
 
-        <nav className="hidden items-center gap-8 font-heading text-xs uppercase tracking-[0.15em] md:flex">
+        <nav className="hidden items-center gap-8 font-heading text-xs font-semibold uppercase tracking-[0.15em] md:flex">
           <Link href="/" className="transition-colors hover:text-brand-mint">
             Home
           </Link>
@@ -83,7 +107,7 @@ export function Header() {
       </div>
 
       {menuOpen && (
-        <nav className="flex flex-col gap-1 border-t border-white/10 px-4 py-3 font-heading text-sm uppercase tracking-wide md:hidden">
+        <nav className="flex flex-col gap-1 border-t border-white/10 bg-brand-navy px-4 py-3 font-heading text-sm uppercase tracking-wide md:hidden">
           <Link href="/" onClick={() => setMenuOpen(false)} className="py-2">
             Home
           </Link>
