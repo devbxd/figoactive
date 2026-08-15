@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { getProducts, getCategories } from "@/lib/products";
+import { PRODUCTS, CATEGORIES } from "@/lib/products";
 import { ProductGrid } from "@/components/ProductGrid";
 
 export const metadata = { title: "Shop" };
 
 export default async function ShopPage({ searchParams }: { searchParams: Promise<{ category?: string }> }) {
   const { category } = await searchParams;
-  const [products, categories] = await Promise.all([getProducts(category), getCategories()]);
+  const products = category ? PRODUCTS.filter((p) => p.category === category) : PRODUCTS;
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10 md:px-6">
@@ -21,15 +21,15 @@ export default async function ShopPage({ searchParams }: { searchParams: Promise
         >
           All
         </Link>
-        {categories.map((c) => (
+        {CATEGORIES.map((c) => (
           <Link
-            key={c.id}
-            href={`/shop?category=${encodeURIComponent(c.slug)}`}
+            key={c}
+            href={`/shop?category=${encodeURIComponent(c)}`}
             className={`px-4 py-1.5 font-heading text-xs uppercase tracking-wide ${
-              category === c.slug ? "bg-brand-navy text-white" : "border border-neutral-300 text-neutral-600"
+              category === c ? "bg-brand-navy text-white" : "border border-neutral-300 text-neutral-600"
             }`}
           >
-            {c.name}
+            {c}
           </Link>
         ))}
       </div>

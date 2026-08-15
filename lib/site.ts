@@ -1,14 +1,8 @@
-// Site-wide constants — the dashboard only manages Categories and Products
-// (see /admin), so everything else here is edited directly in code and
-// redeployed.
+// Site-wide constants — no dashboard for this site, so these are edited
+// directly in code and redeployed rather than through an admin UI.
 
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 export const BRAND_NAME = "Figo Active";
-
-// Homepage countdown banner (Admin has no field for this) — update the date
-// whenever a new promo starts, or the banner just disappears once it passes.
-export const SALE_LABEL = "End of season sale — up to 30% off";
-export const SALE_ENDS_AT = "2026-08-31T23:59:59+03:00";
 
 // Confirmed with the client.
 export const WHATSAPP_NUMBER = "96176963942";
