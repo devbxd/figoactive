@@ -1,7 +1,24 @@
 // Site-wide constants — no dashboard for this site, so these are edited
 // directly in code and redeployed rather than through an admin UI.
 
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+// NEXT_PUBLIC_SITE_URL must be a full URL with a scheme (https://...) — a
+// bare domain (e.g. "figoactive.netlify.app") makes `new URL()` throw
+// wherever this is used (layout.tsx's metadataBase, sitemap.ts, ...),
+// which crashes every single page. Fall back instead of trusting it blind.
+function resolveSiteUrl(raw: string | undefined) {
+  if (!raw) return "http://localhost:3000";
+  try {
+    return new URL(raw).toString().replace(/\/$/, "");
+  } catch {
+    try {
+      return new URL(`https://${raw}`).toString().replace(/\/$/, "");
+    } catch {
+      return "http://localhost:3000";
+    }
+  }
+}
+
+export const SITE_URL = resolveSiteUrl(process.env.NEXT_PUBLIC_SITE_URL);
 export const BRAND_NAME = "Figo Active";
 
 // Homepage countdown banner — update the date whenever a new promo starts,
