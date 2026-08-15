@@ -5,11 +5,16 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Bold black + electric volt accent — a deliberate move away from
+        // the softer navy/teal of the client's old Shopify theme, per their
+        // "make it different, make it wow" request. Class names (brand-navy,
+        // brand-mint, etc.) stay the same across every component; only the
+        // hex values changed here.
         brand: {
-          navy: "#1D2236",
-          mint: "#6FE7DB",
-          black: "#0B0D14",
-          cream: "#F5F4F0",
+          navy: "#131313",
+          mint: "#D6FF3F",
+          black: "#000000",
+          cream: "#F3F2ED",
         },
       },
       fontFamily: {

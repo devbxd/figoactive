@@ -30,9 +30,15 @@ export function Header() {
 
   return (
     <header
-      className={`sticky top-0 z-40 text-white transition-colors duration-300 ${
-        transparent ? "bg-transparent" : "bg-brand-navy shadow-[0_1px_0_rgba(255,255,255,0.08)]"
-      }`}
+      className={`top-0 z-40 w-full text-white transition-colors duration-300 ${
+        // On the homepage the header is taken out of the document flow
+        // (fixed) so it can overlap the hero image with no reserved space
+        // above it — sticky would still occupy its own box at the top and
+        // just show the white page background behind it instead of the
+        // hero. Every other page keeps sticky, which is what already makes
+        // the page content flow correctly below it.
+        isHome ? "fixed" : "sticky"
+      } ${transparent ? "bg-transparent" : "bg-brand-navy shadow-[0_1px_0_rgba(255,255,255,0.08)]"}`}
     >
       {!transparent && (
         <div className="bg-brand-mint py-1.5 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-navy">
