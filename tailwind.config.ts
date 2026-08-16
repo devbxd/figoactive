@@ -5,16 +5,15 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Bold black + electric volt accent — a deliberate move away from
-        // the softer navy/teal of the client's old Shopify theme, per their
-        // "make it different, make it wow" request. Class names (brand-navy,
-        // brand-mint, etc.) stay the same across every component; only the
-        // hex values changed here.
+        // Matches the Figo Active app icon's DA: warm dark charcoal-brown
+        // background, vivid orange accent, off-white text. Class names
+        // (brand-navy, brand-mint, etc.) stay the same across every
+        // component so this is the only file that needed to change.
         brand: {
-          navy: "#131313",
-          mint: "#D6FF3F",
-          black: "#000000",
-          cream: "#F3F2ED",
+          navy: "#332E27",
+          mint: "#FF4A1E",
+          black: "#1A1713",
+          cream: "#F5F1E7",
         },
       },
       fontFamily: {

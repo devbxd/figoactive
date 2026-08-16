@@ -51,6 +51,11 @@ export function Footer() {
               </Link>
             </li>
             <li>
+              <Link href="/faq" className="hover:text-brand-mint">
+                FAQ
+              </Link>
+            </li>
+            <li>
               <a href={whatsappLink()} target="_blank" rel="noopener noreferrer" className="hover:text-brand-mint">
                 WhatsApp
               </a>

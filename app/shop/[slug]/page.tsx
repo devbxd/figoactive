@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { getProductBySlug, getRelatedProducts, PRODUCTS } from "@/lib/products";
 import { ProductDetail } from "@/components/ProductDetail";
 import { ProductGrid } from "@/components/ProductGrid";
+import { RecentlyViewed } from "@/components/RecentlyViewed";
 
 export function generateStaticParams() {
   return PRODUCTS.map((p) => ({ slug: p.slug }));
@@ -39,6 +40,11 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           <ProductGrid products={related} />
         </section>
       )}
+
+      <RecentlyViewed
+        record={{ slug: product.slug, name: product.name, price: product.price, image: product.images[0] ?? null }}
+        exclude={product.slug}
+      />
     </main>
   );
 }

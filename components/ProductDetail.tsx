@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useCart } from "./CartProvider";
 import { useWishlist } from "./WishlistProvider";
@@ -25,6 +25,18 @@ export function ProductDetail({ product }: { product: Product }) {
   const [activeImage, setActiveImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setLightboxOpen(false);
+      if (e.key === "ArrowRight") setActiveImage((i) => (i + 1) % product.images.length);
+      if (e.key === "ArrowLeft") setActiveImage((i) => (i - 1 + product.images.length) % product.images.length);
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [lightboxOpen, product.images.length]);
 
   const activeVariant =
     product.variants.length > 0
@@ -53,9 +65,14 @@ export function ProductDetail({ product }: { product: Product }) {
   return (
     <div className="grid gap-8 md:grid-cols-2">
       <div>
-        <div className="relative aspect-[4/5] overflow-hidden bg-brand-cream">
+        <button
+          type="button"
+          onClick={() => setLightboxOpen(true)}
+          aria-label="Zoom image"
+          className="relative block aspect-[4/5] w-full cursor-zoom-in overflow-hidden bg-brand-cream"
+        >
           <Image src={product.images[activeImage]} alt={product.name} fill sizes="(min-width: 768px) 50vw, 100vw" className="object-cover" />
-        </div>
+        </button>
         {product.images.length > 1 && (
           <div className="mt-3 flex gap-2">
             {product.images.map((img, i) => (
@@ -232,6 +249,56 @@ export function ProductDetail({ product }: { product: Product }) {
           </Accordion>
         </div>
       </div>
+
+      {lightboxOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+          onClick={() => setLightboxOpen(false)}
+        >
+          <button
+            type="button"
+            onClick={() => setLightboxOpen(false)}
+            aria-label="Close"
+            className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center text-2xl text-white/80 hover:text-white"
+          >
+            ✕
+          </button>
+
+          {product.images.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveImage((i) => (i - 1 + product.images.length) % product.images.length);
+                }}
+                aria-label="Previous image"
+                className="absolute left-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center text-3xl text-white/80 hover:text-white md:left-6"
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveImage((i) => (i + 1) % product.images.length);
+                }}
+                aria-label="Next image"
+                className="absolute right-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center text-3xl text-white/80 hover:text-white md:right-6"
+              >
+                ›
+              </button>
+            </>
+          )}
+
+          <div
+            className="relative h-full max-h-[85vh] w-full max-w-3xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Image src={product.images[activeImage]} alt={product.name} fill sizes="100vw" className="object-contain" />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

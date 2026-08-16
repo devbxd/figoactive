@@ -7,10 +7,12 @@ import { useCart } from "./CartProvider";
 import { CATEGORIES } from "@/lib/products";
 import { BRAND_NAME, SALE_LABEL, SALE_ENDS_AT } from "@/lib/site";
 import { CountdownBanner } from "./CountdownBanner";
+import { SearchBar } from "./SearchBar";
 
 export function Header() {
   const { count } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
   const isHome = pathname === "/";
@@ -75,12 +77,26 @@ export function Header() {
               {c}
             </Link>
           ))}
+          <Link href="/faq" className="transition-colors hover:text-brand-mint">
+            FAQ
+          </Link>
           <Link href="/contact" className="transition-colors hover:text-brand-mint">
             Contact
           </Link>
         </nav>
 
         <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={() => setSearchOpen((o) => !o)}
+            aria-label="Search"
+            aria-expanded={searchOpen}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="h-5 w-5">
+              <circle cx="11" cy="11" r="7" />
+              <path d="m21 21-4.3-4.3" strokeLinecap="round" />
+            </svg>
+          </button>
           <Link href="/wishlist" aria-label="Wishlist" className="hidden md:block">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="h-5 w-5">
               <path
@@ -109,6 +125,14 @@ export function Header() {
         </div>
       </div>
 
+      {searchOpen && (
+        <div className="border-t border-white/10 bg-brand-navy px-4 py-3 md:px-6">
+          <div className="mx-auto flex max-w-6xl">
+            <SearchBar dark onSubmit={() => setSearchOpen(false)} />
+          </div>
+        </div>
+      )}
+
       {menuOpen && (
         <nav className="flex flex-col gap-1 border-t border-white/10 bg-brand-navy px-4 py-3 font-heading text-sm uppercase tracking-wide md:hidden">
           <Link href="/" onClick={() => setMenuOpen(false)} className="py-2">
@@ -124,6 +148,9 @@ export function Header() {
           ))}
           <Link href="/wishlist" onClick={() => setMenuOpen(false)} className="py-2">
             Wishlist
+          </Link>
+          <Link href="/faq" onClick={() => setMenuOpen(false)} className="py-2">
+            FAQ
           </Link>
           <Link href="/contact" onClick={() => setMenuOpen(false)} className="py-2">
             Contact
