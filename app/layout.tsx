@@ -21,6 +21,8 @@ export const metadata: Metadata = {
   title: { default: `${BRAND_NAME} — Elevate Your Urban Workout`, template: `%s — ${BRAND_NAME}` },
   description:
     "Performance activewear for fearless athletes who own every stride and every street. Sports bras, leggings, shorts and sets built to move with you.",
+  // Meta Business Manager domain verification, for Instagram/Facebook Shop setup.
+  other: { "facebook-domain-verification": "mlbamns2mt3ctpm1yc0c3o96sxfpby" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
