@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { PRODUCTS, CATEGORIES } from "@/lib/products";
+import { getProducts, getCategories } from "@/lib/products";
 import { ProductGrid } from "@/components/ProductGrid";
 import { CategoryTiles } from "@/components/CategoryTiles";
 import { NewsletterForm } from "@/components/NewsletterForm";
@@ -10,9 +10,12 @@ import { INSTAGRAM_HANDLE } from "@/lib/site";
 
 const MARQUEE_ITEMS = ["Elevate Every Rep", "Cash On Delivery", "Free Shipping In Beirut", "New Drops Weekly"];
 
-export default function HomePage() {
-  const featured = PRODUCTS.slice(0, 8);
-  const editorial = PRODUCTS[Math.min(8, PRODUCTS.length - 1)];
+export const revalidate = 60;
+
+export default async function HomePage() {
+  const [products, categories] = await Promise.all([getProducts(), getCategories()]);
+  const featured = products.slice(0, 8);
+  const editorial = products[Math.min(8, products.length - 1)];
 
   return (
     <main className="overflow-x-hidden">
@@ -23,7 +26,7 @@ export default function HomePage() {
             loop
             muted
             playsInline
-            poster={PRODUCTS[0].images[0]}
+            poster={products[0]?.images[0]}
             className="h-full w-full object-cover"
           >
             <source src="/hero-video.mp4" type="video/mp4" />
@@ -69,7 +72,7 @@ export default function HomePage() {
         <h2 className="mb-8 text-center font-heading text-2xl font-bold uppercase tracking-wide text-brand-navy md:text-3xl">
           Shop by category
         </h2>
-        <CategoryTiles categories={CATEGORIES} products={PRODUCTS} />
+        <CategoryTiles categories={categories} products={products} />
       </ScrollReveal>
 
       <ScrollReveal className="bg-brand-cream px-4 py-20 md:px-6">
@@ -136,7 +139,7 @@ export default function HomePage() {
           @{INSTAGRAM_HANDLE}
         </a>
         <div className="mt-10 grid grid-cols-3 gap-2 md:grid-cols-6">
-          {PRODUCTS.slice(0, 6).map((p) => (
+          {products.slice(0, 6).map((p) => (
             <div key={p.slug} className="group relative aspect-square overflow-hidden bg-brand-cream">
               <Image
                 src={p.images[0]}

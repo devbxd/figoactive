@@ -1,4 +1,4 @@
-import { PRODUCTS } from "@/lib/products";
+import { getProducts } from "@/lib/products";
 import { SITE_URL, BRAND_NAME } from "@/lib/site";
 
 // Meta Commerce Manager product feed (CSV). Paste this route's URL into
@@ -30,7 +30,8 @@ function toRow(values: string[]) {
 }
 
 export async function GET() {
-  const rows = PRODUCTS.map((p) => {
+  const products = await getProducts();
+  const rows = products.map((p) => {
     const inStock = p.variants.length === 0 || p.variants.some((v) => v.available);
     return toRow([
       p.slug,

@@ -4,12 +4,11 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCart } from "./CartProvider";
-import { CATEGORIES } from "@/lib/products";
 import { BRAND_NAME, SALE_LABEL, SALE_ENDS_AT } from "@/lib/site";
 import { CountdownBanner } from "./CountdownBanner";
 import { SearchBar } from "./SearchBar";
 
-export function Header() {
+export function Header({ categories }: { categories: string[] }) {
   const { count } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -68,7 +67,7 @@ export function Header() {
           <Link href="/shop" className="transition-colors hover:text-brand-mint">
             Shop
           </Link>
-          {CATEGORIES.map((c) => (
+          {categories.map((c) => (
             <Link
               key={c}
               href={`/shop?category=${encodeURIComponent(c)}`}
@@ -141,7 +140,7 @@ export function Header() {
           <Link href="/shop" onClick={() => setMenuOpen(false)} className="py-2">
             Shop
           </Link>
-          {CATEGORIES.map((c) => (
+          {categories.map((c) => (
             <Link key={c} href={`/shop?category=${encodeURIComponent(c)}`} onClick={() => setMenuOpen(false)} className="py-2 pl-4 text-white/80">
               {c}
             </Link>

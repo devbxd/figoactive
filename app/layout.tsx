@@ -8,6 +8,7 @@ import { Footer } from "@/components/Footer";
 import { BottomNav } from "@/components/BottomNav";
 import { MetaPixel } from "@/components/MetaPixel";
 import { BRAND_NAME, SITE_URL } from "@/lib/site";
+import { getCategories } from "@/lib/products";
 
 // Oswald (condensed, bold, athletic) for headings/accents; Inter (clean,
 // neutral grotesque) for body text — swapped from the rounder Quicksand
@@ -25,8 +26,9 @@ export const metadata: Metadata = {
   other: { "facebook-domain-verification": "mlbamns2mt3ctpm1yc0c3o96sxfpby" },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const metaPixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
+  const categories = await getCategories();
 
   return (
     <html lang="en" className={`${heading.variable} ${body.variable}`}>
@@ -34,7 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {metaPixelId && <MetaPixel pixelId={metaPixelId} />}
         <WishlistProvider>
           <CartProvider>
-            <Header />
+            <Header categories={categories} />
             {children}
             <Footer />
             <BottomNav />

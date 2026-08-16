@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { BRAND_NAME, INSTAGRAM_HANDLE, whatsappLink } from "@/lib/site";
-import { CATEGORIES } from "@/lib/products";
+import { getCategories } from "@/lib/products";
 import { NewsletterForm } from "./NewsletterForm";
 
-export function Footer() {
+export async function Footer() {
+  const categories = await getCategories();
+
   return (
     <footer className="bg-brand-black px-4 py-12 text-white/70">
       <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-4">
@@ -27,7 +29,7 @@ export function Footer() {
                 All products
               </Link>
             </li>
-            {CATEGORIES.map((c) => (
+            {categories.map((c) => (
               <li key={c}>
                 <Link href={`/shop?category=${encodeURIComponent(c)}`} className="hover:text-brand-mint">
                   {c}

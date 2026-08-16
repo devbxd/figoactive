@@ -1,11 +1,9 @@
 import Link from "next/link";
-import { PRODUCTS, CATEGORIES } from "@/lib/products";
+import { getProducts, getCategories } from "@/lib/products";
 import { ProductGrid } from "@/components/ProductGrid";
 import { SortSelect } from "@/components/SortSelect";
 
 export const metadata = { title: "Shop" };
-
-const SIZES = Array.from(new Set(PRODUCTS.flatMap((p) => p.variants.map((v) => v.size).filter(Boolean)))) as string[];
 
 function buildHref(params: { category?: string; q?: string; size?: string; sort?: string }) {
   const qs = new URLSearchParams();
@@ -24,7 +22,10 @@ export default async function ShopPage({
 }) {
   const { category, q, size, sort } = await searchParams;
 
-  let products = category ? PRODUCTS.filter((p) => p.category === category) : PRODUCTS;
+  const [allProducts, categories] = await Promise.all([getProducts(), getCategories()]);
+  const SIZES = Array.from(new Set(allProducts.flatMap((p) => p.variants.map((v) => v.size).filter(Boolean)))) as string[];
+
+  let products = category ? allProducts.filter((p) => p.category === category) : allProducts;
 
   if (q) {
     const needle = q.trim().toLowerCase();
@@ -60,7 +61,7 @@ export default async function ShopPage({
           >
             All
           </Link>
-          {CATEGORIES.map((c) => (
+          {categories.map((c) => (
             <Link
               key={c}
               href={buildHref({ category: c, q, size, sort })}
