@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/components/CartProvider";
 import { submitOrder } from "./actions";
 import { SHIPPING_COST, whatsappLink } from "@/lib/site";
+import { trackPixelEvent } from "@/lib/pixel";
 
 type ConfirmedOrder = {
   name: string;
@@ -45,8 +46,16 @@ export default function CheckoutPage() {
   const cart = useCart();
   const router = useRouter();
   const [ready, setReady] = useState(false);
+  const firedInitiateCheckout = useRef(false);
 
   useEffect(() => setReady(true), []);
+
+  useEffect(() => {
+    if (ready && cart.items.length > 0 && !firedInitiateCheckout.current) {
+      firedInitiateCheckout.current = true;
+      trackPixelEvent("InitiateCheckout", { value: cart.subtotal, currency: "USD", num_items: cart.count });
+    }
+  }, [ready, cart.items.length, cart.subtotal, cart.count]);
 
   const [form, setForm] = useState({ name: "", phone: "", address: "", city: "" });
   const [shippingZone, setShippingZone] = useState<"beirut" | "outside_beirut">("beirut");
@@ -85,6 +94,12 @@ export default function CheckoutPage() {
         items: cart.items.map((i) => ({ name: i.name, variant: i.variant, quantity: i.quantity, price: i.price })),
         subtotal: cart.subtotal,
         total,
+      });
+      trackPixelEvent("Purchase", {
+        value: total,
+        currency: "USD",
+        content_ids: cart.items.map((i) => i.slug),
+        num_items: cart.count,
       });
       cart.clear();
     } catch {

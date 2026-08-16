@@ -6,6 +6,7 @@ import { useCart } from "./CartProvider";
 import { useWishlist } from "./WishlistProvider";
 import { Accordion } from "./Accordion";
 import type { Product } from "@/lib/products";
+import { trackPixelEvent } from "@/lib/pixel";
 
 export function ProductDetail({ product }: { product: Product }) {
   const { addItem } = useCart();
@@ -37,6 +38,16 @@ export function ProductDetail({ product }: { product: Product }) {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [lightboxOpen, product.images.length]);
+
+  useEffect(() => {
+    trackPixelEvent("ViewContent", {
+      content_ids: [product.slug],
+      content_name: product.name,
+      value: product.price,
+      currency: "USD",
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product.slug]);
 
   const activeVariant =
     product.variants.length > 0

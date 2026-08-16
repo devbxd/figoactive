@@ -6,6 +6,7 @@ import { WishlistProvider } from "@/components/WishlistProvider";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { BottomNav } from "@/components/BottomNav";
+import { MetaPixel } from "@/components/MetaPixel";
 import { BRAND_NAME, SITE_URL } from "@/lib/site";
 
 // Oswald (condensed, bold, athletic) for headings/accents; Inter (clean,
@@ -23,9 +24,12 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const metaPixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
+
   return (
     <html lang="en" className={`${heading.variable} ${body.variable}`}>
       <body className="min-h-screen bg-white font-sans text-brand-black antialiased">
+        {metaPixelId && <MetaPixel pixelId={metaPixelId} />}
         <WishlistProvider>
           <CartProvider>
             <Header />

@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { trackPixelEvent } from "@/lib/pixel";
 
 export type CartItem = {
   slug: string;
@@ -53,6 +54,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         return prev.map((i) => (sameLine(i, item) ? { ...i, quantity: i.quantity + quantity } : i));
       }
       return [...prev, { ...item, quantity }];
+    });
+    trackPixelEvent("AddToCart", {
+      content_ids: [item.slug],
+      content_name: item.name,
+      value: item.price * quantity,
+      currency: "USD",
     });
   }, []);
 
