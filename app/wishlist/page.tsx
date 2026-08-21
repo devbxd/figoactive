@@ -42,7 +42,15 @@ export default function WishlistPage() {
                 <button
                   type="button"
                   onClick={() =>
-                    addItem({ slug: item.slug, variant: null, name: item.name, price: item.price ?? 0, image: item.image })
+                    addItem({
+                      slug: item.slug,
+                      variant: null,
+                      productId: item.productId,
+                      variantId: null,
+                      name: item.name,
+                      price: item.price ?? 0,
+                      image: item.image,
+                    })
                   }
                   className="font-heading text-xs uppercase tracking-wide text-brand-navy underline underline-offset-2"
                 >

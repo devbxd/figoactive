@@ -3,19 +3,25 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/components/CartProvider";
-import { submitOrder } from "./actions";
-import { SHIPPING_COST, whatsappLink } from "@/lib/site";
+import { CouponField } from "@/components/CouponField";
+import { submitOrder, getCheckoutOptions } from "./actions";
+import { whatsappLink } from "@/lib/site";
 import { trackPixelEvent } from "@/lib/pixel";
+
+type ShippingZone = { id: string; label: string; cost: number };
+type PaymentMethod = { id: string; label: string; instructions: string };
 
 type ConfirmedOrder = {
   name: string;
   phone: string;
   address: string;
   city: string;
-  shippingZone: "beirut" | "outside_beirut";
+  shippingZoneLabel: string;
   shippingCost: number;
+  paymentMethodLabel: string;
   items: { name: string; variant: string | null; quantity: number; price: number }[];
   subtotal: number;
+  discountAmount: number;
   total: number;
 };
 
@@ -34,9 +40,10 @@ function buildWhatsAppOrderMessage(orderId: string, o: ConfirmedOrder) {
     itemsText,
     "",
     `Subtotal: $${o.subtotal.toFixed(2)}`,
-    `Shipping (${o.shippingZone === "beirut" ? "Beirut" : "Outside Beirut"}): $${o.shippingCost.toFixed(2)}`,
+    ...(o.discountAmount > 0 ? [`Discount: -$${o.discountAmount.toFixed(2)}`] : []),
+    `Shipping (${o.shippingZoneLabel}): $${o.shippingCost.toFixed(2)}`,
     `Total: $${o.total.toFixed(2)}`,
-    "Payment: Cash on delivery",
+    `Payment: ${o.paymentMethodLabel}`,
   ];
 
   return lines.join("\n");
@@ -48,7 +55,21 @@ export default function CheckoutPage() {
   const [ready, setReady] = useState(false);
   const firedInitiateCheckout = useRef(false);
 
-  useEffect(() => setReady(true), []);
+  const [zones, setZones] = useState<ShippingZone[]>([]);
+  const [methods, setMethods] = useState<PaymentMethod[]>([]);
+  const [shippingZoneId, setShippingZoneId] = useState<string>("");
+  const [paymentMethodId, setPaymentMethodId] = useState<string>("");
+  const [discount, setDiscount] = useState<{ discountAmount: number; freeShipping: boolean } | null>(null);
+
+  useEffect(() => {
+    setReady(true);
+    getCheckoutOptions().then(({ zones, methods }) => {
+      setZones(zones);
+      setMethods(methods);
+      setShippingZoneId(zones[0]?.id ?? "");
+      setPaymentMethodId(methods[0]?.id ?? "");
+    });
+  }, []);
 
   useEffect(() => {
     if (ready && cart.items.length > 0 && !firedInitiateCheckout.current) {
@@ -58,14 +79,15 @@ export default function CheckoutPage() {
   }, [ready, cart.items.length, cart.subtotal, cart.count]);
 
   const [form, setForm] = useState({ name: "", phone: "", address: "", city: "" });
-  const [shippingZone, setShippingZone] = useState<"beirut" | "outside_beirut">("beirut");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmedOrderId, setConfirmedOrderId] = useState<string | null>(null);
   const [confirmedSnapshot, setConfirmedSnapshot] = useState<ConfirmedOrder | null>(null);
 
-  const shippingCost = SHIPPING_COST[shippingZone];
-  const total = cart.subtotal + shippingCost;
+  const selectedZone = zones.find((z) => z.id === shippingZoneId);
+  const shippingCost = discount?.freeShipping ? 0 : selectedZone?.cost ?? 0;
+  const discountAmount = discount?.discountAmount ?? 0;
+  const total = Math.max(0, cart.subtotal - discountAmount + shippingCost);
 
   function update(field: keyof typeof form, value: string) {
     setForm((f) => ({ ...f, [field]: value }));
@@ -76,12 +98,19 @@ export default function CheckoutPage() {
     setSubmitting(true);
     setError(null);
     try {
-      const { orderId } = await submitOrder({
+      const { orderId, total: serverTotal, discountAmount: serverDiscount, shippingCost: serverShippingCost } = await submitOrder({
         ...form,
-        paymentMethod: "cod",
-        shippingZone,
-        shippingCost,
-        items: cart.items.map((i) => ({ variant: i.variant, name: i.name, price: i.price, quantity: i.quantity })),
+        shippingZoneId,
+        paymentMethodId,
+        couponCode: cart.couponCode,
+        items: cart.items.map((i) => ({
+          productId: i.productId,
+          variantId: i.variantId,
+          variant: i.variant,
+          name: i.name,
+          price: i.price,
+          quantity: i.quantity,
+        })),
       });
       setConfirmedOrderId(orderId);
       setConfirmedSnapshot({
@@ -89,14 +118,16 @@ export default function CheckoutPage() {
         phone: form.phone,
         address: form.address,
         city: form.city,
-        shippingZone,
-        shippingCost,
+        shippingZoneLabel: selectedZone?.label ?? "",
+        shippingCost: serverShippingCost,
+        paymentMethodLabel: methods.find((m) => m.id === paymentMethodId)?.label ?? "Cash on delivery",
         items: cart.items.map((i) => ({ name: i.name, variant: i.variant, quantity: i.quantity, price: i.price })),
         subtotal: cart.subtotal,
-        total,
+        discountAmount: serverDiscount,
+        total: serverTotal,
       });
       trackPixelEvent("Purchase", {
-        value: total,
+        value: serverTotal,
         currency: "USD",
         content_ids: cart.items.map((i) => i.slug),
         num_items: cart.count,
@@ -185,39 +216,61 @@ export default function CheckoutPage() {
             />
           </div>
 
-          <div>
-            <label className="mb-2 block text-sm text-neutral-600">Shipping</label>
-            <div className="space-y-2">
-              {(
-                [
-                  { value: "beirut", label: "Beirut", cost: SHIPPING_COST.beirut },
-                  { value: "outside_beirut", label: "Outside Beirut", cost: SHIPPING_COST.outside_beirut },
-                ] as const
-              ).map((opt) => (
-                <label
-                  key={opt.value}
-                  className={`flex cursor-pointer items-center justify-between border bg-white px-4 py-3 text-sm ${
-                    shippingZone === opt.value ? "border-brand-navy" : "border-neutral-300"
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="shippingZone"
-                      checked={shippingZone === opt.value}
-                      onChange={() => setShippingZone(opt.value)}
-                    />
-                    {opt.label}
-                  </span>
-                  <span>${opt.cost.toFixed(2)}</span>
-                </label>
-              ))}
+          {zones.length > 0 && (
+            <div>
+              <label className="mb-2 block text-sm text-neutral-600">Shipping</label>
+              <div className="space-y-2">
+                {zones.map((z) => (
+                  <label
+                    key={z.id}
+                    className={`flex cursor-pointer items-center justify-between border bg-white px-4 py-3 text-sm ${
+                      shippingZoneId === z.id ? "border-brand-navy" : "border-neutral-300"
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="shippingZone"
+                        checked={shippingZoneId === z.id}
+                        onChange={() => setShippingZoneId(z.id)}
+                      />
+                      {z.label}
+                    </span>
+                    <span>{discount?.freeShipping ? "Free" : `$${z.cost.toFixed(2)}`}</span>
+                  </label>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
-          <div className="border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-600">
-            Payment: Cash on delivery
-          </div>
+          {methods.length > 0 && (
+            <div>
+              <label className="mb-2 block text-sm text-neutral-600">Payment</label>
+              <div className="space-y-2">
+                {methods.map((m) => (
+                  <label
+                    key={m.id}
+                    className={`block cursor-pointer border bg-white px-4 py-3 text-sm ${
+                      paymentMethodId === m.id ? "border-brand-navy" : "border-neutral-300"
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        checked={paymentMethodId === m.id}
+                        onChange={() => setPaymentMethodId(m.id)}
+                      />
+                      {m.label}
+                    </span>
+                    {m.instructions && <p className="mt-1 pl-5 text-xs text-neutral-500">{m.instructions}</p>}
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <CouponField subtotal={cart.subtotal} onChange={setDiscount} />
 
           {error && <p className="text-sm text-red-600">{error}</p>}
 
@@ -226,6 +279,12 @@ export default function CheckoutPage() {
               <p>Subtotal</p>
               <p>${cart.subtotal.toFixed(2)}</p>
             </div>
+            {discountAmount > 0 && (
+              <div className="flex items-center justify-between text-sm text-emerald-700">
+                <p>Discount</p>
+                <p>-${discountAmount.toFixed(2)}</p>
+              </div>
+            )}
             <div className="flex items-center justify-between text-sm text-neutral-500">
               <p>Shipping</p>
               <p>${shippingCost.toFixed(2)}</p>

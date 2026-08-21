@@ -13,12 +13,21 @@ export function ProductCard({ product }: { product: Product }) {
   const percentOff = hasDiscount ? Math.round((1 - product.price / product.compareAtPrice!) * 100) : 0;
   // Quick-add only makes sense when there's nothing to choose — a product
   // with color/size options needs its own page so the shopper can pick one.
-  const canQuickAdd = product.variants.length === 0;
+  const canQuickAdd = product.variants.length === 0 && product.inStock;
+  const soldOut = product.variants.length > 0 ? product.variants.every((v) => !v.available) : !product.inStock;
 
   function quickAdd(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
-    addItem({ slug: product.slug, variant: null, name: product.name, price: product.price, image: product.images[0] ?? null });
+    addItem({
+      slug: product.slug,
+      variant: null,
+      productId: product.id,
+      variantId: null,
+      name: product.name,
+      price: product.price,
+      image: product.images[0] ?? null,
+    });
     setAdded(true);
     setTimeout(() => setAdded(false), 1200);
   }
@@ -44,9 +53,21 @@ export function ProductCard({ product }: { product: Product }) {
             className="object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
           />
         )}
-        {hasDiscount && (
-          <span className="absolute left-2 top-2 rounded-full bg-brand-mint px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-brand-navy">
-            -{percentOff}%
+        <div className="absolute left-2 top-2 flex flex-col items-start gap-1">
+          {hasDiscount && (
+            <span className="rounded-full bg-brand-mint px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-brand-navy">
+              -{percentOff}%
+            </span>
+          )}
+          {product.tags.map((tag) => (
+            <span key={tag} className="rounded-full bg-brand-navy px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
+              {tag}
+            </span>
+          ))}
+        </div>
+        {soldOut && (
+          <span className="absolute right-2 top-2 rounded-full bg-neutral-900/80 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
+            Sold out
           </span>
         )}
         {canQuickAdd && (

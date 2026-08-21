@@ -1,17 +1,16 @@
 "use client";
 
-// No backend for this site (static product data, no database) — this just
-// confirms locally rather than actually storing the email anywhere. Wire it
-// up to Resend/Supabase/a form service once the client decides on one.
 import { useState } from "react";
+import { subscribeNewsletter } from "@/app/actions";
 
 export function NewsletterForm({ dark = false }: { dark?: boolean }) {
   const [email, setEmail] = useState("");
   const [done, setDone] = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!email.trim()) return;
+    await subscribeNewsletter(email);
     setDone(true);
     setEmail("");
   }

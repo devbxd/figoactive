@@ -1,41 +1,48 @@
 # Figo Active
 
-Storefront for Figo Active (activewear). Built the same way as houseofoptics
-(Next.js + Tailwind) but **without an admin dashboard**, per the client's
-choice — there is no database, no login, and no way for the client to edit
-products from the site itself.
+Storefront + admin dashboard for Figo Active (activewear). Next.js +
+Tailwind + Supabase (Postgres, storage, auth for the admin login).
 
-## How this was built
+## Editing the site
 
-The product catalog (17 products, images, prices, color/size variants,
-descriptions) was pulled from figoactive.com's live Shopify store
-(`/products.json`) on 2026-08-15. Design (colors `#1D2236` navy / `#6FE7DB`
-mint, fonts Oswald + Quicksand) and copy ("Elevate your urban workout", "we
-believe sweat should never dull your shine"...) were taken from
-figoactive.com and the @figoactive Instagram.
+Everything — products, categories, coupons, orders, shipping zones,
+payment methods, the homepage announcement banner, newsletter popup, FAQ,
+and reviews — is managed from `/admin` (Supabase Auth login). Nothing here
+requires editing code or redeploying.
 
-## Editing products (no dashboard)
+Apply `supabase/migrations/*.sql` in order against your Supabase project
+before running the app for the first time; `scripts/seed.mjs` seeds the
+original catalog + creates the admin user (see the comment at the top of
+that file).
 
-Open `lib/products.ts` and edit the `PRODUCTS` array directly — add, remove,
-or change any product's name/price/images/variants/description there, then
-redeploy. Product images live in `public/products/<slug>/`.
+## Dashboard sections
 
-A Supabase-backed admin dashboard (Categories + Products CRUD at `/admin`)
-was built and then put on hold — the client may or may not want it. That
-work is still in git history (commit `dbd79e2`, reverted in `0400fb9`) and
-can be restored later without starting over.
+- **Products** — name, price, discount (compare-at price, product- and
+  variant-level), stock tracking, tags, "featured on homepage" flag,
+  manually curated related products, duplicate/import/export (CSV),
+  drag-free image reordering.
+- **Categories** — simple CRUD.
+- **Orders** — every checkout is now persisted (it used to only email/
+  WhatsApp the owner and store nothing); status tracking, search/filter,
+  CSV export.
+- **Coupons** — percent / fixed / free-shipping, code-based or automatic
+  (no code needed), minimum order, expiry, usage limits, usage stats.
+- **Customers** — derived from order history (no customer accounts on
+  this site).
+- **Reviews** — customers submit from the product page; moderated here
+  before they show up on the site.
+- **Settings** — announcement/countdown banner, newsletter popup + its
+  discount code, shipping zones, payment methods, FAQ content.
 
 ## "Special" touches (after the client sent oneractive.com as a reference)
 
-- Countdown-timer promo banner on the homepage (`lib/site.ts` →
-  `SALE_LABEL` / `SALE_ENDS_AT` — update the date manually, it just
-  disappears once it passes).
+- Countdown-timer promo banner on the homepage, editable from
+  `/admin/parametres`.
 - Quick-add-to-cart on hover, for products with no color/size options.
-- "-X%" badge computed from the compare-at price.
+- "-X%" badge computed from the compare-at price (product or variant).
 - "Shop by category" image tiles on the homepage.
-- Newsletter signup (homepage + footer) — front-end only for now, doesn't
-  store the email anywhere yet (no backend without Supabase); wire it to
-  Resend or Supabase once one is set up.
+- Newsletter signup (homepage, footer, and a popup) — stored in the
+  `subscribers` table.
 - Size guide chart on product pages that have sizes (generic reference
   measurements — swap in Figo Active's real chart when they provide one).
 - Scroll-reveal animations on homepage sections.
@@ -50,17 +57,20 @@ can be restored later without starting over.
 ## Confirmed with the client
 
 - WhatsApp number (`96176963942` in `lib/site.ts`) — correct.
-- Cash on delivery as the only payment method — fine, no card gateway needed.
+- Cash on delivery as the default payment method — more methods can be
+  added from `/admin/parametres` without a code change.
 - Keep the "Send it via WhatsApp too" button on the order confirmation
-  screen — this is the main way an order reaches the owner.
+  screen — this is still the fastest way an order reaches the owner,
+  alongside the order now also being saved in the dashboard.
 
 ## Still open
 
 - **Contact email**: no public email was found anywhere for Figo Active —
   `lib/site.ts` currently has a placeholder (`hello@figoactive.com`).
 - **Order notifications**: without RESEND_API_KEY + OWNER_NOTIFICATION_EMAIL
-  set (see `.env.example`), the WhatsApp button above is the only way an
-  order reaches the owner — email notification is optional on top of that.
+  set (see `.env.example`), the WhatsApp button above and the Orders
+  dashboard are the only ways an order reaches the owner — email
+  notification is optional on top of that.
 - Several products (Dolmation Set, Pull-Puff Set, Airflow Bra, Aura Bra,
   Lili Biker Shorts, Athletica Bra, Bouba Flare Pants) have no description
   yet on the live Shopify store, so they show "Details coming soon." here

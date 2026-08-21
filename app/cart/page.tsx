@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useState } from "react";
 import { useCart } from "@/components/CartProvider";
+import { CouponField } from "@/components/CouponField";
 
 export default function CartPage() {
   const cart = useCart();
+  const [discount, setDiscount] = useState<{ discountAmount: number; freeShipping: boolean } | null>(null);
 
   if (cart.items.length === 0) {
     return (
@@ -66,9 +69,34 @@ export default function CartPage() {
         ))}
       </div>
 
-      <div className="mt-6 flex items-center justify-between border-t border-neutral-200 pt-4">
-        <p className="font-heading text-sm uppercase tracking-wide text-neutral-500">Subtotal</p>
-        <p className="text-lg font-semibold text-brand-navy">${cart.subtotal.toFixed(2)}</p>
+      <div className="mt-6 border-t border-neutral-200 pt-4">
+        <CouponField subtotal={cart.subtotal} onChange={setDiscount} />
+      </div>
+
+      <div className="mt-4 space-y-1.5">
+        <div className="flex items-center justify-between text-sm text-neutral-500">
+          <p>Subtotal</p>
+          <p>${cart.subtotal.toFixed(2)}</p>
+        </div>
+        {discount && discount.discountAmount > 0 && (
+          <div className="flex items-center justify-between text-sm text-emerald-700">
+            <p>Discount</p>
+            <p>-${discount.discountAmount.toFixed(2)}</p>
+          </div>
+        )}
+        {discount?.freeShipping && (
+          <div className="flex items-center justify-between text-sm text-emerald-700">
+            <p>Shipping</p>
+            <p>Free</p>
+          </div>
+        )}
+        <div className="flex items-center justify-between border-t border-neutral-200 pt-1.5">
+          <p className="font-heading text-sm uppercase tracking-wide text-neutral-500">Total</p>
+          <p className="text-lg font-semibold text-brand-navy">
+            ${Math.max(0, cart.subtotal - (discount?.discountAmount ?? 0)).toFixed(2)}
+            <span className="ml-1 text-xs font-normal text-neutral-400">+ shipping</span>
+          </p>
+        </div>
       </div>
 
       <Link

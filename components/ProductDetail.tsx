@@ -5,10 +5,13 @@ import Image from "next/image";
 import { useCart } from "./CartProvider";
 import { useWishlist } from "./WishlistProvider";
 import { Accordion } from "./Accordion";
+import { ProductReviews } from "./ProductReviews";
 import type { Product } from "@/lib/products";
 import { trackPixelEvent } from "@/lib/pixel";
 
-export function ProductDetail({ product }: { product: Product }) {
+type Review = { id: string; customerName: string; rating: number; comment: string; createdAt: string };
+
+export function ProductDetail({ product, reviews = [] }: { product: Product; reviews?: Review[] }) {
   const { addItem } = useCart();
   const { has, toggle } = useWishlist();
 
@@ -59,14 +62,22 @@ export function ProductDetail({ product }: { product: Product }) {
   const price = activeVariant?.price ?? product.price;
   const compareAtPrice = activeVariant?.compareAtPrice ?? product.compareAtPrice;
   const hasDiscount = compareAtPrice != null && compareAtPrice > price;
-  const outOfStock = activeVariant ? !activeVariant.available : false;
+  const outOfStock = activeVariant ? !activeVariant.available : !product.inStock;
 
   const variantLabel = [selectedColor, selectedSize].filter(Boolean).join(" / ") || null;
-  const wishlistItem = { slug: product.slug, name: product.name, price: product.price, image: product.images[0] };
+  const wishlistItem = { slug: product.slug, productId: product.id, name: product.name, price: product.price, image: product.images[0] };
 
   function handleAdd() {
     addItem(
-      { slug: product.slug, variant: variantLabel, name: product.name, price, image: product.images[0] },
+      {
+        slug: product.slug,
+        variant: variantLabel,
+        productId: product.id,
+        variantId: activeVariant?.id ?? null,
+        name: product.name,
+        price,
+        image: product.images[0],
+      },
       quantity
     );
     setAdded(true);
@@ -105,6 +116,18 @@ export function ProductDetail({ product }: { product: Product }) {
       <div>
         <p className="font-heading text-xs uppercase tracking-[0.2em] text-neutral-400">{product.category}</p>
         <h1 className="mt-1 font-heading text-2xl font-bold uppercase tracking-wide text-brand-navy">{product.name}</h1>
+        {product.tags.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {product.tags.map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full bg-brand-navy px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
 
         <p className="mt-3 text-lg">
           {hasDiscount ? (
@@ -257,6 +280,9 @@ export function ProductDetail({ product }: { product: Product }) {
           </Accordion>
           <Accordion title="Return & Exchange">
             <p>Returns accepted within 7 days if the item hasn&apos;t been worn and is in its original packaging. Message us on WhatsApp to start a return.</p>
+          </Accordion>
+          <Accordion title={`Reviews${reviews.length > 0 ? ` (${reviews.length})` : ""}`}>
+            <ProductReviews productId={product.id} reviews={reviews} />
           </Accordion>
         </div>
       </div>

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getProducts, getCategories } from "@/lib/products";
+import { getProducts, getCategories, getFeaturedProducts } from "@/lib/products";
 import { ProductGrid } from "@/components/ProductGrid";
 import { CategoryTiles } from "@/components/CategoryTiles";
 import { NewsletterForm } from "@/components/NewsletterForm";
@@ -13,8 +13,7 @@ const MARQUEE_ITEMS = ["Elevate Every Rep", "Cash On Delivery", "Free Shipping I
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const [products, categories] = await Promise.all([getProducts(), getCategories()]);
-  const featured = products.slice(0, 8);
+  const [products, categories, featured] = await Promise.all([getProducts(), getCategories(), getFeaturedProducts(8)]);
   const editorial = products[Math.min(8, products.length - 1)];
 
   return (

@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 
 export type WishlistItem = {
   slug: string;
+  productId: string;
   name: string;
   price: number | null;
   image: string | null;

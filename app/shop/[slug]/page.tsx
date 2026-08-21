@@ -1,9 +1,27 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getProductBySlug, getRelatedProducts } from "@/lib/products";
+import { createServiceClient } from "@/lib/supabase/server";
 import { ProductDetail } from "@/components/ProductDetail";
 import { ProductGrid } from "@/components/ProductGrid";
 import { RecentlyViewed } from "@/components/RecentlyViewed";
+
+async function getApprovedReviews(productId: string) {
+  const supabase = createServiceClient();
+  const { data } = await supabase
+    .from("product_reviews")
+    .select("id, customer_name, rating, comment, created_at")
+    .eq("product_id", productId)
+    .eq("is_approved", true)
+    .order("created_at", { ascending: false });
+  return (data ?? []).map((r) => ({
+    id: r.id,
+    customerName: r.customer_name,
+    rating: r.rating,
+    comment: r.comment,
+    createdAt: r.created_at,
+  }));
+}
 
 export const revalidate = 60;
 
@@ -24,11 +42,11 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const product = await getProductBySlug(slug);
   if (!product) notFound();
 
-  const related = await getRelatedProducts(product);
+  const [related, reviews] = await Promise.all([getRelatedProducts(product), getApprovedReviews(product.id)]);
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-10 md:px-6">
-      <ProductDetail product={product} />
+      <ProductDetail product={product} reviews={reviews} />
 
       {related.length > 0 && (
         <section className="mt-16 border-t border-neutral-200 pt-10">

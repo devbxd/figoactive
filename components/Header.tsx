@@ -4,11 +4,17 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCart } from "./CartProvider";
-import { BRAND_NAME, SALE_LABEL, SALE_ENDS_AT } from "@/lib/site";
+import { BRAND_NAME } from "@/lib/site";
 import { CountdownBanner } from "./CountdownBanner";
 import { SearchBar } from "./SearchBar";
 
-export function Header({ categories }: { categories: string[] }) {
+export function Header({
+  categories,
+  banner,
+}: {
+  categories: string[];
+  banner: { text: string; active: boolean; endsAt: string | null };
+}) {
   const { count } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -42,7 +48,7 @@ export function Header({ categories }: { categories: string[] }) {
         isHome ? "fixed" : "sticky"
       } ${transparent ? "bg-transparent" : "bg-brand-navy shadow-[0_1px_0_rgba(255,255,255,0.08)]"}`}
     >
-      <CountdownBanner label={SALE_LABEL} endsAt={SALE_ENDS_AT} />
+      {banner.active && banner.text && <CountdownBanner label={banner.text} endsAt={banner.endsAt} />}
 
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5 md:px-6">
         <button

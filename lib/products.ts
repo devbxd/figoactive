@@ -6,6 +6,7 @@
 import { createServiceClient } from "@/lib/supabase/server";
 
 export type ProductVariant = {
+  id: string;
   color: string | null;
   size: string | null;
   price: number;
@@ -14,6 +15,7 @@ export type ProductVariant = {
 };
 
 export type Product = {
+  id: string;
   slug: string;
   name: string;
   category: string;
@@ -22,10 +24,13 @@ export type Product = {
   compareAtPrice: number | null;
   images: string[];
   variants: ProductVariant[];
+  inStock: boolean;
+  isFeatured: boolean;
+  tags: string[];
 };
 
 const PRODUCT_SELECT =
-  "slug, name, description, price, compare_at_price, category:categories(name), images:product_images(url, sort_order), variants:product_variants(color_label, size_label, price, compare_at_price, available, sort_order)";
+  "id, slug, name, description, price, compare_at_price, stock, is_featured, tags, category:categories(name), images:product_images(url, sort_order), variants:product_variants(id, color_label, size_label, price, compare_at_price, available, stock, sort_order)";
 
 function normalize(row: any): Product {
   const category = Array.isArray(row.category) ? row.category[0] : row.category;
@@ -33,14 +38,18 @@ function normalize(row: any): Product {
   const variants = (row.variants ?? [])
     .sort((a: any, b: any) => a.sort_order - b.sort_order)
     .map((v: any) => ({
+      id: v.id,
       color: v.color_label,
       size: v.size_label,
       price: v.price != null ? Number(v.price) : Number(row.price),
       compareAtPrice: v.compare_at_price != null ? Number(v.compare_at_price) : null,
-      available: v.available,
+      // A tracked stock of 0 overrides the manual "available" toggle —
+      // whichever says out-of-stock wins.
+      available: v.available && (v.stock == null || v.stock > 0),
     }));
 
   return {
+    id: row.id,
     slug: row.slug,
     name: row.name,
     category: category?.name ?? "",
@@ -49,6 +58,9 @@ function normalize(row: any): Product {
     compareAtPrice: row.compare_at_price != null ? Number(row.compare_at_price) : null,
     images,
     variants,
+    inStock: row.stock == null || row.stock > 0,
+    isFeatured: row.is_featured ?? false,
+    tags: row.tags ?? [],
   };
 }
 
@@ -60,6 +72,12 @@ export async function getProducts(): Promise<Product[]> {
     .eq("is_active", true)
     .order("sort_order", { ascending: true });
   return ((data as any[]) ?? []).map(normalize);
+}
+
+export async function getFeaturedProducts(limit = 8): Promise<Product[]> {
+  const products = await getProducts();
+  const featured = products.filter((p) => p.isFeatured);
+  return (featured.length > 0 ? featured : products).slice(0, limit);
 }
 
 export async function getCategories(): Promise<string[]> {
@@ -74,6 +92,21 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
 }
 
 export async function getRelatedProducts(product: Product, limit = 4): Promise<Product[]> {
+  const supabase = createServiceClient();
+  const { data: relations } = await supabase
+    .from("product_relations")
+    .select("related_product_id, sort_order")
+    .eq("product_id", product.id)
+    .order("sort_order", { ascending: true });
+
   const products = await getProducts();
+  const byId = new Map(products.map((p) => [p.id, p]));
+
+  const manual = (relations ?? [])
+    .map((r) => byId.get(r.related_product_id))
+    .filter((p): p is Product => !!p && p.slug !== product.slug);
+
+  if (manual.length > 0) return manual.slice(0, limit);
+
   return products.filter((p) => p.slug !== product.slug && p.category === product.category).slice(0, limit);
 }

@@ -21,10 +21,13 @@ function resolveSiteUrl(raw: string | undefined) {
 export const SITE_URL = resolveSiteUrl(process.env.NEXT_PUBLIC_SITE_URL);
 export const BRAND_NAME = "Figo Active";
 
-// Homepage countdown banner — update the date whenever a new promo starts,
-// or the banner just disappears once it passes.
-export const SALE_LABEL = "End of season sale — up to 30% off";
-export const SALE_ENDS_AT = "2026-08-31T23:59:59+03:00";
+// The announcement/countdown banner, shipping zones, and payment methods
+// used to be hardcoded here — they're now editable from /admin/parametres
+// (see lib/settings.ts) so the client doesn't need a redeploy to change them.
+
+// A variant/product's stock dropping to (or below) this after an order
+// triggers a low-stock line in the order notification email.
+export const LOW_STOCK_THRESHOLD = 3;
 
 // Confirmed with the client.
 export const WHATSAPP_NUMBER = "96176963942";
@@ -34,10 +37,6 @@ export const INSTAGRAM_HANDLE = "figoactive";
 // Instagram; set the real one here (and configure it as a verified sender
 // in Resend) once the client provides it.
 export const CONTACT_EMAIL = "hello@figoactive.com";
-
-// Lebanon shipping, same split as houseofoptics — confirm actual rates
-// with the client before launch.
-export const SHIPPING_COST = { beirut: 4, outside_beirut: 6 } as const;
 
 export function whatsappLink(message?: string) {
   const base = `https://wa.me/${WHATSAPP_NUMBER}`;

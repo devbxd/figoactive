@@ -17,7 +17,10 @@ type OrderNotification = {
   city: string;
   shippingZone: string;
   total: number;
+  discountAmount: number;
+  couponCode: string | null;
   items: { name: string; variant: string | null; price: number; quantity: number }[];
+  lowStockItems: { name: string; stock: number }[];
 };
 
 const FROM = `${BRAND_NAME} <orders@figoactive.com>`;
@@ -55,6 +58,18 @@ export async function notifyNewOrder(order: OrderNotification) {
   const ownerEmail = process.env.OWNER_NOTIFICATION_EMAIL;
   if (!apiKey || !ownerEmail) return;
 
+  const discountLine =
+    order.discountAmount > 0
+      ? `<p style="margin:0 0 4px;color:#059669;">Discount${order.couponCode ? ` (${order.couponCode})` : ""}: -$${order.discountAmount.toFixed(2)}</p>`
+      : "";
+
+  const lowStockBlock =
+    order.lowStockItems.length > 0
+      ? `<p style="margin:16px 0 4px;font-size:13px;color:#b45309;"><strong>Low stock:</strong> ${order.lowStockItems
+          .map((i) => `${i.name} (${i.stock} left)`)
+          .join(", ")}</p>`
+      : "";
+
   await sendEmail(
     apiKey,
     ownerEmail,
@@ -65,8 +80,10 @@ export async function notifyNewOrder(order: OrderNotification) {
         <p style="margin:0 0 4px;"><strong>${order.name}</strong> — ${order.phone}</p>
         <p style="margin:0 0 4px;">${order.address}, ${order.city} (${order.shippingZone})</p>
         ${itemsList(order.items)}
+        ${discountLine}
         <p style="margin:0;font-size:16px;"><strong>Total: $${order.total.toFixed(2)}</strong></p>
         <p style="margin:8px 0 0;font-size:12px;color:#999;">Order ref: ${order.orderId.slice(0, 8)}</p>
+        ${lowStockBlock}
       `,
       ctaLabel: "Visit site",
       ctaUrl: SITE_URL,

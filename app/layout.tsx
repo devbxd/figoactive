@@ -7,8 +7,10 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { BottomNav } from "@/components/BottomNav";
 import { MetaPixel } from "@/components/MetaPixel";
+import { NewsletterPopup } from "@/components/NewsletterPopup";
 import { BRAND_NAME, SITE_URL } from "@/lib/site";
 import { getCategories } from "@/lib/products";
+import { getSiteSettings } from "@/lib/settings";
 
 // Oswald (condensed, bold, athletic) for headings/accents; Inter (clean,
 // neutral grotesque) for body text — swapped from the rounder Quicksand
@@ -28,7 +30,7 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const metaPixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
-  const categories = await getCategories();
+  const [categories, settings] = await Promise.all([getCategories(), getSiteSettings()]);
 
   return (
     <html lang="en" className={`${heading.variable} ${body.variable}`}>
@@ -36,10 +38,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {metaPixelId && <MetaPixel pixelId={metaPixelId} />}
         <WishlistProvider>
           <CartProvider>
-            <Header categories={categories} />
+            <Header
+              categories={categories}
+              banner={{ text: settings.bannerText, active: settings.bannerActive, endsAt: settings.bannerEndsAt }}
+            />
             {children}
             <Footer />
             <BottomNav />
+            {settings.newsletterPopupActive && <NewsletterPopup couponCode={settings.newsletterPopupCouponCode} />}
           </CartProvider>
         </WishlistProvider>
       </body>
