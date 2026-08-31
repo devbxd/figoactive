@@ -7,8 +7,9 @@ Tailwind + Supabase (Postgres, storage, auth for the admin login).
 
 Everything — products, categories, coupons, orders, shipping zones,
 payment methods, the homepage announcement banner, newsletter popup, FAQ,
-and reviews — is managed from `/admin` (Supabase Auth login). Nothing here
-requires editing code or redeploying.
+reviews, and now every piece of homepage content (hero video, headings,
+text, philosophy banner image, marquee strip) — is managed from `/admin`
+(Supabase Auth login). Nothing here requires editing code or redeploying.
 
 Apply `supabase/migrations/*.sql` in order against your Supabase project
 before running the app for the first time; `scripts/seed.mjs` seeds the
@@ -21,6 +22,11 @@ that file).
   variant-level), stock tracking, tags, "featured on homepage" flag,
   manually curated related products, duplicate/import/export (CSV),
   drag-free image reordering.
+- **Homepage** (`/admin/homepage`) — hero video URL, hero eyebrow/title/
+  subtext/button, Instagram handle, marquee strip items, category-section
+  heading, bestsellers eyebrow/heading, "philosophy" banner (image upload
+  or URL, eyebrow, quote, button), newsletter section text, "follow along"
+  eyebrow. Covers every hardcoded string/media on `/`.
 - **Categories** — simple CRUD.
 - **Orders** — every checkout is now persisted (it used to only email/
   WhatsApp the owner and store nothing); status tracking, search/filter,
@@ -52,7 +58,8 @@ that file).
   copyrighted to the uploader even when they look "free," and reusing
   footage of an identifiable real person without a proper release is a
   real risk for the client. Swap this file for real Figo Active footage
-  whenever they have some — same filename, same spot.
+  whenever they have some — same filename, same spot, or just paste a new
+  video URL from `/admin/homepage` (no redeploy needed either way).
 
 ## Confirmed with the client
 
