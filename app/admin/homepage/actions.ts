@@ -3,24 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/server";
 
-const BUCKET = "site-assets";
-
 function revalidateSite() {
   revalidatePath("/admin/homepage");
   revalidatePath("/", "layout");
-}
-
-async function uploadImageIfProvided(supabase: ReturnType<typeof createServiceClient>, file: File | null) {
-  if (!file || file.size === 0) return null;
-  const ext = file.name.split(".").pop() || "jpg";
-  const path = `homepage/${crypto.randomUUID()}.${ext}`;
-  const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
-    contentType: file.type || "image/jpeg",
-    upsert: false,
-  });
-  if (error) throw error;
-  const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path);
-  return pub.publicUrl;
 }
 
 function text(formData: FormData, key: string, fallback = "") {
@@ -35,9 +20,10 @@ export async function updateHomepageContent(formData: FormData) {
     ? marqueeRaw.split(",").map((item) => item.trim()).filter(Boolean)
     : [];
 
-  const philosophyImageFile = formData.get("philosophy_image_file") as File | null;
-  const uploadedPhilosophyImage = await uploadImageIfProvided(supabase, philosophyImageFile);
-  const philosophyImageUrl = uploadedPhilosophyImage || text(formData, "philosophy_image_url") || null;
+  // The philosophy image is uploaded client-side (see HomepageForm.tsx),
+  // straight to Supabase Storage — this field just receives the resulting
+  // URL, never the file itself, so this action's request body stays tiny.
+  const philosophyImageUrl = text(formData, "philosophy_image_url") || null;
 
   const heroVideoUrl = text(formData, "hero_video_url", "/hero-video.mp4");
 

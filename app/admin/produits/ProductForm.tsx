@@ -1,8 +1,8 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { SubmitButton } from "@/components/SubmitButton";
 import { VariantsEditor } from "./VariantsEditor";
+import { uploadFileDirect } from "@/lib/storage/uploadClient";
 
 type Category = { id: string; name: string };
 
@@ -44,7 +44,7 @@ export function ProductForm({
 }) {
   // create() still redirects on success, so this only ever resolves to true
   // for update() — which stays on the page instead of navigating away.
-  const [saved, dispatch] = useActionState(async (_prev: boolean, formData: FormData) => {
+  const [saved, dispatch, isSaving] = useActionState(async (_prev: boolean, formData: FormData) => {
     await action(formData);
     return true;
   }, false);
@@ -56,8 +56,40 @@ export function ProductForm({
   const hasDiscount = price && compareAtPrice && compareAtNum > priceNum;
   const percentOff = hasDiscount ? Math.round((1 - priceNum / compareAtNum) * 100) : 0;
 
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  // Photos upload straight from the browser to Supabase Storage before the
+  // rest of the form is submitted as a Server Action — routing the raw
+  // file through the action instead hits request-size limits on Netlify
+  // (and similar hosts) well below a real phone photo.
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setUploadError(null);
+    const formData = new FormData(e.currentTarget);
+    const files = (formData.getAll("images") as File[]).filter((file) => file && file.size > 0);
+    formData.delete("images");
+
+    if (files.length > 0) {
+      setUploading(true);
+      try {
+        for (const file of files) {
+          const url = await uploadFileDirect("products", "products", file);
+          formData.append("image_url", url);
+        }
+      } catch (err) {
+        setUploading(false);
+        setUploadError(err instanceof Error ? err.message : "Photo upload failed. Please try again.");
+        return;
+      }
+      setUploading(false);
+    }
+
+    dispatch(formData);
+  }
+
   return (
-    <form action={dispatch} encType="multipart/form-data" className="max-w-lg space-y-4">
+    <form onSubmit={handleSubmit} className="max-w-lg space-y-4">
       <div>
         <label className="mb-1 block text-sm text-neutral-600">Product name</label>
         <input
@@ -181,7 +213,8 @@ export function ProductForm({
 
       <div>
         <label className="mb-1 block text-sm text-neutral-600">{product ? "Add more photos" : "Photos"}</label>
-        <input name="images" type="file" accept="image/*" multiple className="w-full text-sm" />
+        <input name="images" type="file" accept="image/*" multiple className="w-full text-sm" disabled={uploading} />
+        {uploadError && <p className="mt-1 text-sm text-red-600">{uploadError}</p>}
       </div>
 
       {product && (
@@ -192,9 +225,13 @@ export function ProductForm({
       )}
 
       <div className="flex items-center gap-3">
-        <SubmitButton className="bg-brand-navy px-6 py-2.5 text-sm uppercase tracking-wide text-white hover:opacity-90">
-          {submitLabel}
-        </SubmitButton>
+        <button
+          type="submit"
+          disabled={uploading || isSaving}
+          className="bg-brand-navy px-6 py-2.5 text-sm uppercase tracking-wide text-white hover:opacity-90 disabled:cursor-wait disabled:opacity-60"
+        >
+          {uploading ? "Uploading photos…" : isSaving ? "Saving…" : submitLabel}
+        </button>
         {saved && <span className="text-sm text-emerald-700">Saved ✓</span>}
       </div>
     </form>

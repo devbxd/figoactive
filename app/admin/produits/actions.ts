@@ -5,23 +5,8 @@ import { redirect } from "next/navigation";
 import { createServiceClient } from "@/lib/supabase/server";
 import { slugify } from "@/lib/slugify";
 
-const BUCKET = "products";
-
-async function uploadImages(supabase: ReturnType<typeof createServiceClient>, productSlug: string, files: File[]) {
-  const urls: string[] = [];
-  for (const file of files) {
-    if (!file || file.size === 0) continue;
-    const ext = file.name.split(".").pop() || "jpg";
-    const path = `${productSlug}/${crypto.randomUUID()}.${ext}`;
-    const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
-      contentType: file.type || "image/jpeg",
-      upsert: false,
-    });
-    if (error) throw error;
-    const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path);
-    urls.push(pub.publicUrl);
-  }
-  return urls;
+function imageUrlsFromForm(formData: FormData) {
+  return (formData.getAll("image_url") as string[]).map((u) => u.trim()).filter(Boolean);
 }
 
 function parseVariantRows(formData: FormData) {
@@ -95,7 +80,7 @@ function productFields(formData: FormData) {
 
 export async function createProduct(formData: FormData) {
   const f = productFields(formData);
-  const files = (formData.getAll("images") as File[]).filter((f) => f.size > 0);
+  const imageUrls = imageUrlsFromForm(formData);
 
   if (!f.name) return;
 
@@ -122,9 +107,8 @@ export async function createProduct(formData: FormData) {
 
   await saveVariants(supabase, product.id, formData);
 
-  const urls = await uploadImages(supabase, product.slug, files);
-  if (urls.length > 0) {
-    await supabase.from("product_images").insert(urls.map((url, i) => ({ product_id: product.id, url, sort_order: i })));
+  if (imageUrls.length > 0) {
+    await supabase.from("product_images").insert(imageUrls.map((url, i) => ({ product_id: product.id, url, sort_order: i })));
   }
 
   revalidatePath("/admin/produits");
@@ -135,13 +119,11 @@ export async function createProduct(formData: FormData) {
 export async function updateProduct(productId: string, formData: FormData) {
   const f = productFields(formData);
   const isActive = formData.get("is_active") === "on";
-  const files = (formData.getAll("images") as File[]).filter((f) => f.size > 0);
+  const imageUrls = imageUrlsFromForm(formData);
 
   if (!f.name) return;
 
   const supabase = createServiceClient();
-  const { data: product } = await supabase.from("products").select("slug").eq("id", productId).single();
-  if (!product) return;
 
   await supabase
     .from("products")
@@ -161,12 +143,11 @@ export async function updateProduct(productId: string, formData: FormData) {
   await saveVariants(supabase, productId, formData);
   await saveRelatedProducts(supabase, productId, formData);
 
-  const urls = await uploadImages(supabase, product.slug, files);
-  if (urls.length > 0) {
+  if (imageUrls.length > 0) {
     const { count } = await supabase.from("product_images").select("*", { count: "exact", head: true }).eq("product_id", productId);
     await supabase
       .from("product_images")
-      .insert(urls.map((url, i) => ({ product_id: productId, url, sort_order: (count ?? 0) + i })));
+      .insert(imageUrls.map((url, i) => ({ product_id: productId, url, sort_order: (count ?? 0) + i })));
   }
 
   revalidatePath("/admin/produits");
