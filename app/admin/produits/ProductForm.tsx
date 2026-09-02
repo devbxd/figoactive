@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, startTransition } from "react";
 import { VariantsEditor } from "./VariantsEditor";
 import { uploadFileDirect } from "@/lib/storage/uploadClient";
 
@@ -85,7 +85,13 @@ export function ProductForm({
       setUploading(false);
     }
 
-    dispatch(formData);
+    // dispatch (from useActionState) must run inside a transition, or React
+    // warns "called outside of a transition" and the pending state / the
+    // post-submit redirect can misbehave — this raced more often on the
+    // slower mobile connections that made the client hit it consistently.
+    startTransition(() => {
+      dispatch(formData);
+    });
   }
 
   return (
